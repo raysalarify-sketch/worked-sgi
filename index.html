@@ -567,9 +567,41 @@ function showPage(name, btn) {
 // ════════════════════════════════════════════
 //  PRODUCTS GRID
 // ════════════════════════════════════════════
+
+let selectedCat = '';
+const CATS = ['전체', ...new Set(PRODUCTS.map(p=>p.cat))];
+
+function renderCatFilter() {
+  const bar = document.getElementById('catFilterBar');
+  if(!bar) return;
+  bar.innerHTML = CATS.map(c=>`
+    <button class="filter-chip ${(c==='전체'&&!selectedCat)||(c===selectedCat)?'on':''}" 
+      onclick="selectCat('${c}')">${c}</button>
+  `).join('');
+}
+
+function selectCat(cat) {
+  selectedCat = cat==='전체' ? '' : cat;
+  selectedProduct = null;
+  uploadedDocs = {};
+  document.getElementById('applyFormArea').innerHTML = '';
+  renderCatFilter();
+  renderProducts();
+}
+
 function renderProducts() {
-  document.getElementById('productGrid').innerHTML = PRODUCTS.map(p=>`
+  const list = selectedCat ? PRODUCTS.filter(p=>p.cat===selectedCat) : PRODUCTS;
+  document.getElementById('productGrid').innerHTML = list.map(p=>`
     <div class="product-card ${selectedProduct===p.id?'selected':''}" onclick="selectProduct('${p.id}')">
+      <div class="pc-icon">${p.icon}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-desc">${p.desc}</div>
+      <span class="pc-cat">${p.cat}</span>
+      ${p.addons.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">${p.addons.map(a=>({loan_calc:'💰대출계산',lease_manager:'📋임차관리',progress_tracker:'📊진행관리',unit_tracker:'🏠세대관리',checklist:'✅체크리스트'}[a]||a)).map(a=>`<span style="font-size:9px;background:var(--blue-light);color:var(--blue);padding:2px 6px;border-radius:10px;font-weight:600">${a}</span>`).join('')}</div>`:''}
+    </div>
+  `).join('');
+}
+" onclick="selectProduct('${p.id}')">
       <div class="pc-icon">${p.icon}</div>
       <div class="pc-name">${p.name}</div>
       <div class="pc-desc">${p.desc}</div>
