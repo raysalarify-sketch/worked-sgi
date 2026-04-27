@@ -236,10 +236,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div style="font-size:42px;margin-bottom:16px">🔒</div>
     <h2>대리점 관리자 로그인</h2>
     <p>대리점 관계자만 접근할 수 있습니다.</p>
-    <input type="text" id="agId" placeholder="아이디 또는 대리점명 (예: 중앙대리점, master)" />
-    <input type="password" id="agPw" placeholder="비밀번호 (sgi1234)" onkeyup="if(event.key==='Enter')doLogin()" />
+    <div style="text-align:left;margin-bottom:6px">
+      <label style="font-size:12px;font-weight:700;color:#4A566A;display:block;margin-bottom:6px">대리점명</label>
+      <input type="text" id="agId" placeholder="대리점명을 입력하세요" style="width:100%;padding:14px;border:1px solid #D8DFE9;border-radius:8px;font-size:14px;box-sizing:border-box;font-family:inherit" />
+    </div>
+    <div style="text-align:left;margin-bottom:0">
+      <label style="font-size:12px;font-weight:700;color:#4A566A;display:block;margin-bottom:6px">비밀번호</label>
+      <input type="password" id="agPw" placeholder="비밀번호를 입력하세요" onkeyup="if(event.key==='Enter')doLogin()" style="width:100%;padding:14px;border:1px solid #D8DFE9;border-radius:8px;font-size:14px;box-sizing:border-box;font-family:inherit" />
+    </div>
     <button onclick="doLogin()">보안 접속하기</button>
   </div>
+
 </div>
 
 <!-- SIDEBAR -->
