@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -323,6 +323,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 <script src="data.js"></script>
 <script>
+// ── GLOBAL: 대리점 ID ──
+const urlParamsGlobal = new URLSearchParams(window.location.search);
+const currentAgencyId = urlParamsGlobal.get('agency') || 'ag01';
+
 // ── LOCAL STORAGE KEY ──
 const STORAGE_KEY = 'sgi_applications';
 
@@ -770,11 +774,9 @@ function submitForm() {
     });
   }
 
-    const urlParams2 = new URLSearchParams(window.location.search);
-  const currentAgencyId = urlParams2.get('agency') || 'ag01';
   const newId = 'A'+new Date().getFullYear()+'-'+String(apps.length+50).padStart(4,'0');
   const app = {
-    id:newId, name, contact,
+    id:newId, agencyId: currentAgencyId, name, contact,
     productId:p.id, product:p.name,
     amount, period, date:today(), status:'접수대기',
     docs:{...uploadedDocs}, memo, leaseReqs:[...leaseReqs], fieldsData: dynamicFields
@@ -944,9 +946,7 @@ function submitConsult() {
   if(!contact) { showToast('연락처를 입력해주세요','warn'); return; }
   
   const p = SGI_PRODUCTS.find(x => x.id===selectedProductId) || {id:'', name:'기타'};
-    const urlParams2 = new URLSearchParams(window.location.search);
-  const currentAgencyId = urlParams2.get('agency') || 'ag01';
-  const newId = 'C'+new Date().getFullYear()+'-'+String(apps.length+50).padStart(4,'0');
+  const newId = 'Q'+new Date().getFullYear()+'-'+String(apps.length+50).padStart(4,'0');
   
   const app = {
     id: newId, agencyId: currentAgencyId, name, contact, email,
