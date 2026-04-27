@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -312,7 +312,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         <input type="text" class="fb-input" id="appSearch" placeholder="신청인 · 회사명 · 접수번호 · 상품명 검색..." oninput="renderApps()">
         <select class="fb-select" id="appStatusF" onchange="renderApps()">
           <option value="">전체 상태</option>
-          <option value="접수대기">접수대기</option>
+          <option value="상담요청">상담요청</option><option value="접수대기">접수대기</option>
           <option value="서류검토">서류검토</option>
           <option value="승인완료">승인완료</option>
           <option value="증권발행">증권발행</option>
@@ -1112,3 +1112,6 @@ renderDashboard();
 </script>
 </body>
 </html>
+
+
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -250,7 +250,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div style="flex:1;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px">
         <span id="selectedProductName" style="font-weight:700;color:var(--blue)"></span>이(가) 선택되었습니다
       </div>
-      <button class="btn btn-primary btn-lg" onclick="gotoForm()">다음 단계 — 정보 입력 →</button>
+      <div style="display:flex;gap:10px;"><button class="btn btn-secondary btn-lg" onclick="openConsultModal()">상담 남기기</button><button class="btn btn-primary btn-lg" onclick="gotoForm()">다음 단계 ➔ 정보 입력 창</button></div>
     </div>
   </div>
 
@@ -862,5 +862,76 @@ function searchStatus() {
 renderCats();
 renderProducts();
 </script>
+<!-- CONSULT MODAL -->
+<div class="modal-overlay" id="consultModal">
+  <div class="modal" style="width:400px; max-width:90%">
+    <div class="modal-hd">
+      <h3>상담 남기기</h3>
+      <button class="close-btn" onclick="closeConsultModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text3);margin-bottom:16px;">선택하신 상품에 대해 궁금한 점이 있으시면 상담을 남겨주세요.</p>
+      <div class="form-group">
+        <label>성명 *</label>
+        <input type="text" id="c-name" placeholder="이름을 입력하세요">
+      </div>
+      <div class="form-group">
+        <label>연락처 *</label>
+        <input type="text" id="c-contact" placeholder="010-0000-0000">
+      </div>
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="c-email" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label>상담 요청 내용</label>
+        <textarea id="c-memo" rows="3" placeholder="궁금하신 내용을 적어주세요"></textarea>
+      </div>
+      <div style="margin-top:20px;">
+        <button class="btn btn-primary" style="width:100%" onclick="submitConsult()">상담 요청하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function openConsultModal() {
+  document.getElementById('consultModal').classList.add('open');
+}
+function closeConsultModal() {
+  document.getElementById('consultModal').classList.remove('open');
+}
+function submitConsult() {
+  const name = document.getElementById('c-name').value.trim();
+  const contact = document.getElementById('c-contact').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const memo = document.getElementById('c-memo').value.trim();
+  
+  if(!name) { showToast('성명을 입력해주세요','warn'); return; }
+  if(!contact) { showToast('연락처를 입력해주세요','warn'); return; }
+  
+  const p = SGI_PRODUCTS.find(x => x.id===selectedProductId) || {id:'', name:'기타'};
+  const newId = 'C'+new Date().getFullYear()+'-'+String(apps.length+50).padStart(4,'0');
+  
+  const app = {
+    id: newId, name, contact, email,
+    productId: p.id, product: '[상담요청] ' + p.name,
+    amount: 0, period: '', date: today(), status: '상담요청',
+    docs: {}, memo, leaseReqs: [], fieldsData: {}
+  };
+  
+  apps.unshift(app);
+  saveApps(apps);
+  
+  showToast('상담 요청이 정상적으로 접수되었습니다.','success');
+  closeConsultModal();
+  
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-contact').value = '';
+  document.getElementById('c-email').value = '';
+  document.getElementById('c-memo').value = '';
+}
+</script>
 </body>
 </html>
+
+
