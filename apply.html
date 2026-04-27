@@ -243,6 +243,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <button class="htab" onclick="gotoSection('s-form',this)">② 정보 입력</button>
       <button class="htab" onclick="gotoSection('s-confirm',this)">③ 접수 완료</button>
       <button class="htab" onclick="gotoSection('s-status',this)">④ 접수 조회</button>
+      <button class="htab" onclick="gotoSection('s-terms',this)">📜 약관 안내</button>
     </div>
   </div>
 </div>
@@ -317,6 +318,99 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div id="statusResult"></div>
   </div>
 
+  <!-- ⑤ 약관 안내 -->
+  <div class="section" id="s-terms">
+    <div class="section-hd">
+      <h2>📜 보험 약관 안내</h2>
+      <p>SGI 서울보증보험 상품별 주요 약관 및 접수 시 유의사항을 확인하세요</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:28px">
+      <div class="card"><div class="card-body" style="padding:18px 20px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:24px">📋</span>
+        <div><div style="font-weight:700;margin-bottom:6px;color:var(--text)">접수 전 공통 준비사항</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">모든 보증보험 신청 시 ① 사업자등록증(개인: 신분증) ② 최근 3개월 이내 납세증명서 ③ 해당 계약서 원본이 기본으로 필요합니다.</div></div>
+      </div></div>
+      <div class="card"><div class="card-body" style="padding:18px 20px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:24px">⏱️</span>
+        <div><div style="font-weight:700;margin-bottom:6px;color:var(--text)">처리 소요 기간</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">일반보증: 1~2 영업일 / 전세금보증: 3~5 영업일 / 대형공사(50억↑): 5~7 영업일. 서류 미비 시 추가 소요됩니다.</div></div>
+      </div></div>
+      <div class="card"><div class="card-body" style="padding:18px 20px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:24px">💰</span>
+        <div><div style="font-weight:700;margin-bottom:6px;color:var(--text)">보증료 계산 방법</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">보증료 = 보증금액 × 보증료율 × (보증기간/365). 신용등급·거래실적·상품유형에 따라 차등 적용되며, 법인은 재무제표 제출 시 우대 가능합니다.</div></div>
+      </div></div>
+      <div class="card"><div class="card-body" style="padding:18px 20px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:24px">⚠️</span>
+        <div><div style="font-weight:700;margin-bottom:6px;color:var(--text)">서류 유의사항</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">① 모든 서류는 발급일 기준 3개월 이내 유효 ② 법인인감 필요 서류는 인감증명서 첨부 필수 ③ 서류 추가 요청 후 5영업일 내 미제출 시 자동 반려됩니다.</div></div>
+      </div></div>
+      <div class="card"><div class="card-body" style="padding:18px 20px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:24px">📞</span>
+        <div><div style="font-weight:700;margin-bottom:6px;color:var(--text)">SGI 서울보증 고객센터</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">대표번호: <strong>1670-7000</strong><br>보증업무: 내선 1번 / 보험금청구: 내선 2번<br>운영: 평일 09:00~18:00 (점심 12~13시 제외)</div></div>
+      </div></div>
+      <div class="card"><div class="card-body" style="padding:18px 20px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:24px">🌐</span>
+        <div><div style="font-weight:700;margin-bottom:6px;color:var(--text)">약관 원문 확인</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">SGI 서울보증보험 홈페이지 → 상품안내 → 각 상품별 약관 다운로드 가능.<br><a href="https://www.sgic.co.kr" target="_blank" style="color:var(--blue);font-weight:700">www.sgic.co.kr 바로가기 →</a></div></div>
+      </div></div>
+    </div>
+
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;border-bottom:2px solid var(--border);padding-bottom:10px">📑 상품별 약관 요약</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-bottom:20px">
+      <div class="card" onclick="this.querySelector('.td').style.display=this.querySelector('.td').style.display==='none'?'block':'none'" style="cursor:pointer">
+        <div class="card-body" style="padding:16px 20px">
+          <div style="font-weight:700;margin-bottom:6px">🏗️ 입찰·계약·하자 보증보험</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">공사/용역/물품계약 입찰 및 이행 보증</div>
+          <div class="td" style="display:none;border-top:1px solid var(--border);padding-top:10px;font-size:12px;color:var(--text2);line-height:1.8">
+            <b>입찰보증</b>: 낙찰 후 계약 미체결 시 보험금 지급<br>
+            <b>계약보증</b>: 계약금액의 10~20% 보증, 계약기간 유효<br>
+            <b>하자보증</b>: 준공 후 하자담보기간(1~5년) 전체 유효<br>
+            <b>공사이행보증</b>: 계약금액 40% 이상, 부도·폐업 시 대위시공<br>
+            📎 공통 서류: 사업자등록증, 해당 계약서, 납세증명서
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px">▼ 클릭하여 상세보기</div>
+        </div>
+      </div>
+      <div class="card" onclick="this.querySelector('.td').style.display=this.querySelector('.td').style.display==='none'?'block':'none'" style="cursor:pointer">
+        <div class="card-body" style="padding:16px 20px">
+          <div style="font-weight:700;margin-bottom:6px">🏠 전세금·임대 보증보험</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">임차인 전세금 반환 및 임대인 의무 보증</div>
+          <div class="td" style="display:none;border-top:1px solid var(--border);padding-top:10px;font-size:12px;color:var(--text2);line-height:1.8">
+            <b>전세금반환보증</b>: 보증금 최대 7억(수도권), 확정일자 필수<br>
+            <b>전세금보장신용</b>: 보증료율 연 0.128~0.154%<br>
+            <b>임대주택보증</b>: 임대사업자 의무 가입, 매년 갱신<br>
+            📎 공통 서류: 임대차계약서, 전입신고서, 건물등기부등본
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px">▼ 클릭하여 상세보기</div>
+        </div>
+      </div>
+      <div class="card" onclick="this.querySelector('.td').style.display=this.querySelector('.td').style.display==='none'?'block':'none'" style="cursor:pointer">
+        <div class="card-body" style="padding:16px 20px">
+          <div style="font-weight:700;margin-bottom:6px">🏛️ 관공서·납세 보증보험</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">인허가 이행 및 세금 납부 보증</div>
+          <div class="td" style="display:none;border-top:1px solid var(--border);padding-top:10px;font-size:12px;color:var(--text2);line-height:1.8">
+            <b>납세보증</b>: 체납세액의 110% 이상 보증, 납부기한까지 유효<br>
+            <b>인허가이행보증</b>: 사업허가 조건 이행 보증<br>
+            <b>개인정보보호보증</b>: ISMS 인증 보유 시 우대<br>
+            📎 공통 서류: 사업자등록증, 납세증명서, 관련 고지서
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px">▼ 클릭하여 상세보기</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,#EBF4FF,#DBEAFE);border:1px solid #93C5FD">
+      <div class="card-body" style="padding:20px;text-align:center">
+        <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:6px">📘 SGI 서울보증보험 공식 약관 원문</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px">각 상품의 전체 약관 원문은 SGI 서울보증보험 홈페이지에서 확인하실 수 있습니다.</div>
+        <a href="https://www.sgic.co.kr" target="_blank" style="display:inline-block;padding:12px 28px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:13px;font-weight:700;text-decoration:none">🌐 www.sgic.co.kr 바로가기</a>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /main -->
 
 <div class="toast" id="toast"></div>
@@ -360,8 +454,8 @@ function gotoSection(id, tabBtn) {
   document.querySelectorAll('.htab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (tabBtn) tabBtn.classList.add('active');
-  const idx = ['s-product','s-form','s-confirm','s-status'].indexOf(id);
-  updateSteps(idx);
+  const idx = ['s-product','s-form','s-confirm','s-status','s-terms'].indexOf(id);
+  if (idx >= 0 && idx < 4) updateSteps(idx);
 }
 function updateSteps(active) {
   for (let i = 1; i <= 4; i++) {

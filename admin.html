@@ -400,8 +400,25 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div id="termsContent"></div>
     </div>
 
+    <!-- ⑥ 대리점 관리 (최상위만) -->
+    <div class="page" id="page-agencies">
+      <div class="page-hd">
+        <div><h2>🏢 대리점 관리</h2><p>대리점 계정 등록·조회·삭제 및 전용 QR 발급</p></div>
+        <button class="btn btn-primary btn-sm" onclick="openNewAgency()">+ 대리점 추가</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table class="data-table">
+          <thead><tr>
+            <th>아이디</th><th>대리점명</th><th>비밀번호</th><th>권한</th><th>접수/계약</th><th>관리</th>
+          </tr></thead>
+          <tbody id="agenciesTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main-wrap -->
+
 
 <!-- MODAL: 접수 상세 -->
 <div class="modal-overlay" id="appModal">
