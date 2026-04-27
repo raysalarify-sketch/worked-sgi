@@ -277,10 +277,9 @@ body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:var(--bg);col
     </div>
   </div>
   <div class="nav">
-    <button class="nav-btn active" onclick="showPage('apply',this)">상품 접수</button>
-    <button class="nav-btn" onclick="showPage('contracts',this)">계약 관리 <span class="nav-badge" id="expiryCount">2</span></button>
-    <button class="nav-btn" onclick="showPage('admin',this)">접수 관리 <span class="nav-badge" id="pendingCount">3</span></button>
-    <button class="nav-btn" onclick="showPage('products',this)">상품 안내</button>
+    <a href="apply.html" class="nav-btn" style="text-decoration:none; display:inline-flex; align-items:center;">🚀 신규 상품 접수 (사용자용)</a>
+    <a href="admin.html" class="nav-btn" style="text-decoration:none; display:inline-flex; align-items:center;">🔒 대리점 관리자 (어드민)</a>
+    <button class="nav-btn active" onclick="showPage('apply',this)">구버전 홈</button>
   </div>
   <div class="topbar-actions">
     <button class="export-btn" onclick="exportCSV()">📥 CSV 내보내기</button>
