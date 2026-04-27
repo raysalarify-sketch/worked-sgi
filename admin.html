@@ -1077,21 +1077,24 @@ function renderProductCatalog() {
 
 // ── AGENCIES MANAGEMENT ──
 function renderAgencies() {
-  document.getElementById('agenciesTbody').innerHTML = agencies.map(ag => {
+  const tbody = document.getElementById("agenciesTbody");
+  if (!tbody) return;
+  tbody.innerHTML = agencies.map(ag => {
     const agApps = apps.filter(a => a.agencyId === ag.id).length;
-    const agCts = contracts.filter(c => c.agencyId === ag.id).length;
-    return <tr>
-      <td style="padding:12px; border-bottom:1px solid #eee;"><strong>+ag.id+</strong></td>
-      <td style="padding:12px; border-bottom:1px solid #eee;">+ag.name+</td>
-      <td style="padding:12px; border-bottom:1px solid #eee;">+ag.pw+</td>
-      <td style="padding:12px; border-bottom:1px solid #eee;"><span class="badge +(ag.role==='super'?'b-wait':'')+">+(ag.role==='super'?'최상위':'대리점')+</span></td>
-      <td style="padding:12px; border-bottom:1px solid #eee;">+(ag.role==='super'?'-':agApps+건)+</td>
-      <td style="padding:12px; border-bottom:1px solid #eee;">+(ag.role==='super'?'-':agCts+건)+</td>
-      <td style="padding:12px; border-bottom:1px solid #eee;">
-        +(ag.role!=='super'?<button class="btn btn-xs" style="background:var(--blue-pale);color:var(--blue);border:1px solid #a3c4f3;margin-right:4px;" onclick="openQrModal('+ag.id+', '+ag.name+')">QR</button><button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5" onclick="deleteAgency('+ag.id+')">삭제</button>:'-')+
-      </td>
-    </tr>;
-  }).join('');
+    const agCts  = contracts.filter(c => c.agencyId === ag.id).length;
+    const roleLbl = ag.role === "super" ? "최상위" : "대리점";
+    const roleCls = ag.role === "super" ? "b-wait" : "b-review";
+    const actionBtns = ag.role !== "super"
+      ? '<button class="btn btn-xs" style="background:var(--blue-light);color:var(--blue);border:1px solid var(--blue2);margin-right:4px" onclick="openQrModal(\'' + ag.id + '\',\'' + ag.name + '\')">QR</button><button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5" onclick="deleteAgency(\'' + ag.id + '\')">삭제</button>'
+      : "-";
+    const countCell = ag.role !== "super" ? agApps + "건 / " + agCts + "건" : "-";
+    return "<tr><td style='padding:12px;border-bottom:1px solid #eee'><strong>" + ag.id + "</strong></td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee'>" + ag.name + "</td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee'>" + ag.pw + "</td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee'><span class='badge " + roleCls + "'>" + roleLbl + "</span></td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee'>" + countCell + "</td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee'>" + actionBtns + "</td></tr>";
+  }).join("");
 }
 function openNewAgency() {
   const nid = 'ag' + String(agencies.length).padStart(2, '0');
