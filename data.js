@@ -261,14 +261,21 @@ function parseNum(s) {
 }
 
 // ── 대리점 계정 관리 ──
+
+// 기본 대리점 계정 관리 데이터
 const DEFAULT_AGENCIES = [
-  { id: 'master', pw: 'master1234', name: '최상위 관리자', role: 'super' },
-  { id: 'ag01', pw: 'sgi1234', name: '중앙대리점', role: 'agency' },
-  { id: 'ag02', pw: 'sgi1234', name: '강남대리점', role: 'agency' }
+  { id: 'master', pw: 'master1234', name: '최상위 관리자', role: 'super',  email: 'service@salarify.kr', phone: '' },
+  { id: 'ag01',   pw: 'sgi1234',   name: '중앙대리점',    role: 'agency', email: '', phone: '' },
+  { id: 'ag02',   pw: 'sgi1234',   name: '강남대리점',    role: 'agency', email: '', phone: '' }
 ];
 function loadAgencies() {
   const data = localStorage.getItem('sgi_agencies');
-  return data ? JSON.parse(data) : DEFAULT_AGENCIES;
+  if (!data) return DEFAULT_AGENCIES;
+  const saved = JSON.parse(data);
+  return saved.map(ag => {
+    const def = DEFAULT_AGENCIES.find(d => d.id === ag.id) || {};
+    return { email: '', phone: '', ...def, ...ag };
+  });
 }
 function saveAgencies(arr) {
   localStorage.setItem('sgi_agencies', JSON.stringify(arr));

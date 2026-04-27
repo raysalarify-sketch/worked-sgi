@@ -961,11 +961,46 @@ function submitForm() {
   apps.unshift(app);
   saveApps(apps);
 
+  // NHN Cloud 알림 발송 (비동기 - 실패해도 접수는 완료)
+  sendApplicationNotification(app, p);
+
   renderConfirm(app, p);
   gotoSection('s-confirm');
   document.querySelectorAll('.htab')[2].classList.add('active');
   document.querySelectorAll('.htab').forEach((t,i)=>{ if(i!==2) t.classList.remove('active'); });
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── NHN Cloud 대리점 알림 발송 ──
+async function sendApplicationNotification(app, product) {
+  try {
+    const agency = agencies.find(a => a.id === app.agencyId);
+    if (!agency || (!agency.email && !agency.phone)) return;
+
+    const attachments = Object.entries(window.uploadedFiles || {}).map(([name, data]) => ({
+      name, base64: data.base64, contentType: data.type || 'application/octet-stream'
+    }));
+
+    const res = await fetch('/api/notify-application', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agencyEmail:   agency.email,
+        agencyName:    agency.name,
+        agencyPhone:   agency.phone,
+        applicantName: app.name,
+        contact:       app.contact,
+        productName:   product.name,
+        amount:        app.amount,
+        appId:         app.id,
+        attachments
+      })
+    });
+    const result = await res.json();
+    console.log('[알림발송]', result.ok ? '성공' : '실패', result);
+  } catch(e) {
+    console.warn('[알림발송 오류 - 무시됨]', e.message);
+  }
 }
 
 function renderConfirm(app, p) {

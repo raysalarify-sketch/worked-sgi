@@ -429,7 +429,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div class="card" style="overflow:hidden">
         <table class="data-table">
           <thead><tr>
-            <th>아이디</th><th>대리점명</th><th>비밀번호</th><th>권한</th><th>접수/계약</th><th>관리</th>
+            <th>아이디</th><th>대리점명</th><th>비밀번호</th><th>이메일</th><th>담당전화</th><th>권한</th><th>접수/계약</th><th>관리</th>
           </tr></thead>
           <tbody id="agenciesTbody"></tbody>
         </table>
@@ -1135,28 +1135,49 @@ function renderAgencies() {
     const roleLbl = ag.role === "super" ? "최상위" : "대리점";
     const roleCls = ag.role === "super" ? "b-wait" : "b-review";
     const actionBtns = ag.role !== "super"
-      ? '<button class="btn btn-xs" style="background:var(--blue-light);color:var(--blue);border:1px solid var(--blue2);margin-right:4px" onclick="openQrModal(\'' + ag.id + '\',\'' + ag.name + '\')">QR</button><button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5" onclick="deleteAgency(\'' + ag.id + '\')">삭제</button>'
+      ? '<button class="btn btn-xs" style="background:var(--blue-light);color:var(--blue);border:1px solid var(--blue2);margin-right:4px" onclick="openQrModal(\'' + ag.id + '\',\'' + ag.name + '\')">QR</button>' +
+        '<button class="btn btn-xs" style="background:var(--amber-light);color:var(--amber);border:1px solid #F5C6A0;margin-right:4px" onclick="editAgency(\'' + ag.id + '\')">편집</button>' +
+        '<button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5" onclick="deleteAgency(\'' + ag.id + '\')">삭제</button>'
       : "-";
     const countCell = ag.role !== "super" ? agApps + "건 / " + agCts + "건" : "-";
+    const emailCell = ag.email ? '<a href="mailto:'+ag.email+'" style="font-size:12px;color:var(--blue)">'+ag.email+'</a>' : '<span style="color:var(--text3);font-size:12px">미등록</span>';
+    const phoneCell = ag.phone || '<span style="color:var(--text3);font-size:12px">미등록</span>';
     return "<tr><td style='padding:12px;border-bottom:1px solid #eee'><strong>" + ag.id + "</strong></td>"
       + "<td style='padding:12px;border-bottom:1px solid #eee'>" + ag.name + "</td>"
-      + "<td style='padding:12px;border-bottom:1px solid #eee'>" + ag.pw + "</td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee;font-size:12px;color:var(--text3)'>" + ag.pw + "</td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee'>" + emailCell + "</td>"
+      + "<td style='padding:12px;border-bottom:1px solid #eee;font-size:12px'>" + phoneCell + "</td>"
       + "<td style='padding:12px;border-bottom:1px solid #eee'><span class='badge " + roleCls + "'>" + roleLbl + "</span></td>"
       + "<td style='padding:12px;border-bottom:1px solid #eee'>" + countCell + "</td>"
       + "<td style='padding:12px;border-bottom:1px solid #eee'>" + actionBtns + "</td></tr>";
   }).join("");
 }
 function openNewAgency() {
-  const nid = 'ag' + String(agencies.length).padStart(2, '0');
-  const n = prompt('새로 등록할 대리점명을 입력하세요:', '신규대리점');
-  if(!n) return;
-  const pw = prompt('사용할 비밀번호를 입력하세요:', 'sgi1234');
-  if(!pw) return;
-  
-  agencies.push({ id: nid, name: n, pw: pw, role: 'agency' });
+  const nid = 'ag' + String(agencies.filter(a=>a.role==='agency').length + 1).padStart(2, '0');
+  const n   = prompt('대리점명:', '신규대리점');
+  if (!n) return;
+  const pw    = prompt('비밀번호:', 'sgi1234');
+  if (!pw) return;
+  const email = prompt('대리점 이메일 (접수 알림 수신):', '');
+  const phone = prompt('담당자 휴대폰 (문자 알림 수신, - 없이):', '');
+
+  agencies.push({ id: nid, name: n, pw, role: 'agency', email: email||'', phone: phone||'' });
   saveAgencies(agencies);
   renderAgencies();
-  showToast(n + ' 대리점이 발급되었습니다.', 'success');
+  showToast(n + ' 대리점이 등록되었습니다.', 'success');
+}
+function editAgency(id) {
+  const ag = agencies.find(a => a.id === id);
+  if (!ag) return;
+  const email = prompt('이메일 (접수 알림 수신):', ag.email || '');
+  if (email === null) return;
+  const phone = prompt('담당자 휴대폰 (문자 알림):', ag.phone || '');
+  if (phone === null) return;
+  ag.email = email.trim();
+  ag.phone = phone.trim();
+  saveAgencies(agencies);
+  renderAgencies();
+  showToast(ag.name + ' 연락정보가 저장되었습니다.', 'success');
 }
 function deleteAgency(id) {
   if(!confirm('정말 삭제하시겠습니까? (기존 내역은 유지됩니다)')) return;
