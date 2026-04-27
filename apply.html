@@ -885,6 +885,11 @@ function searchStatus() {
 // ── INIT ──
 renderCats();
 renderProducts();
+const curAgency = agencies.find(a => a.id === currentAgencyId);
+if (curAgency && curAgency.id !== 'master') {
+  document.querySelector('.hero-title').innerHTML = '서울보증 <span style="color:var(--blue-light); font-size:16px;">' + curAgency.name + '</span>';
+  document.querySelector('.hero-sub').textContent = curAgency.name + ' 전용 접수 시스템';
+}
 if (new URLSearchParams(window.location.search).get('tab') === 'status') {
   gotoSection('s-status');
   document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));
@@ -970,6 +975,7 @@ document.querySelectorAll('.modal-overlay').forEach(mo=>{
 </script>
 </body>
 </html>
+
 
 
 

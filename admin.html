@@ -228,6 +228,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .login-box input{width:100%;padding:14px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;font-size:14px;box-sizing:border-box}
 .login-box button{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;margin-top:10px}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 </head>
 <body>
 <div id="loginOverlay">
@@ -415,6 +416,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
+<!-- QR MODAL -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal" style="width:360px; text-align:center; margin:auto;">
+    <div class="modal-head"><h3>전용 접수 QR 코드</h3><button class="modal-close" onclick="closeModal('qrModal')">✕</button></div>
+    <div class="modal-body" style="padding:30px;">
+      <h4 id="qrAgencyName" style="margin-bottom:20px; color:var(--blue); font-size:18px;"></h4>
+      <canvas id="qrCanvas" style="border:1px solid #eee; border-radius:10px; padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.05);"></canvas>
+      <div style="margin-top:20px; font-size:12px; color:var(--text2); background:var(--bg2); padding:10px; border-radius:6px; word-break:break-all; user-select:all;" id="qrUrl"></div>
+    </div>
+    <div class="modal-foot" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="copyQrUrl()">링크 복사</button>
+      <button class="btn btn-primary" onclick="downloadQr()">이미지 저장</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="data.js"></script>
@@ -1042,7 +1058,7 @@ function renderAgencies() {
       <td style="padding:12px; border-bottom:1px solid #eee;">+(ag.role==='super'?'-':agApps+건)+</td>
       <td style="padding:12px; border-bottom:1px solid #eee;">+(ag.role==='super'?'-':agCts+건)+</td>
       <td style="padding:12px; border-bottom:1px solid #eee;">
-        +(ag.role!=='super'?<button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5" onclick="deleteAgency('+ag.id+')">삭제</button>:'-')+
+        +(ag.role!=='super'?<button class="btn btn-xs" style="background:var(--blue-pale);color:var(--blue);border:1px solid #a3c4f3;margin-right:4px;" onclick="openQrModal('+ag.id+', '+ag.name+')">QR</button><button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5" onclick="deleteAgency('+ag.id+')">삭제</button>:'-')+
       </td>
     </tr>;
   }).join('');
@@ -1157,6 +1173,41 @@ function initMenu() {
   }
 }
 
+// ── QR CODE GENERATOR ──
+let currentQrUrl = '';
+let currentQrName = '';
+function openQrModal(agencyId, agencyName) {
+  currentQrName = agencyName;
+  const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'apply.html');
+  currentQrUrl = baseUrl + '?agency=' + agencyId;
+  
+  document.getElementById('qrAgencyName').textContent = agencyName + ' 전용 접수 링크';
+  document.getElementById('qrUrl').textContent = currentQrUrl;
+  
+  new QRious({
+    element: document.getElementById('qrCanvas'),
+    value: currentQrUrl,
+    size: 200,
+    background: 'white',
+    foreground: '#185FA5'
+  });
+  
+  openModal('qrModal');
+}
+function copyQrUrl() {
+  navigator.clipboard.writeText(currentQrUrl).then(() => {
+    showToast('링크가 복사되었습니다.', 'success');
+  });
+}
+function downloadQr() {
+  const canvas = document.getElementById('qrCanvas');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'SGI_QR_' + currentQrName + '.png';
+  a.click();
+  showToast('QR 코드가 저장되었습니다.', 'success');
+}
+
 // ── INIT ──
 if(sessionStorage.getItem('sgi_admin_logged')==='true') {
   document.getElementById('loginOverlay').style.display='none';
@@ -1168,6 +1219,11 @@ if(sessionStorage.getItem('sgi_admin_logged')==='true') {
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
