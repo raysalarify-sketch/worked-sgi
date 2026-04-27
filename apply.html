@@ -1049,20 +1049,44 @@ function searchStatus() {
               <div class="tl-item">
                 ${i<STATUS_STEPS.length-1?'<div class="tl-line"></div>':''}
                 <div class="tl-dot ${i<curStep?'done':i===curStep?'active':'pending'}">${i<curStep?'✓':STATUS_ICON[step]||'○'}</div>
-                <div class="tl-content">
+                                <div class="tl-content">
+                  <h4 style="color:${i===curStep?'var(--blue)':i<curStep?'var(--green)':'var(--text3)'}">${step}</h4>
+                  <p>${i<curStep?'완료':i===curStep?'현재 처리 중':'대기 중'}</p>
+                </div>
+              </div>`).join('')}
+          </div>`}
+        ${a.memo && !isRejected ? `<div style="background:var(--bg3);border-radius:var(--r);padding:10px 12px;margin-top:12px;font-size:12px;color:var(--text2)">📌 ${a.memo}</div>` : ''}
+        <div style="margin-top:14px;text-align:right">
+          <button onclick="deleteApp('${a.id}')" style="font-size:12px;padding:6px 14px;border:1px solid var(--red-light);background:var(--red-light);color:var(--red);border-radius:var(--r);cursor:pointer;font-weight:700;font-family:inherit">🗑 접수 삭제</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── INIT ──
 renderCats();
 renderProducts();
-const curAgency = agencies.find(a => a.id === currentAgencyId);
-if (curAgency && curAgency.id !== 'master') {
-  document.querySelector('.hero-title').innerHTML = '서울보증 <span style="color:var(--blue-light); font-size:16px;">' + curAgency.name + '</span>';
-  document.querySelector('.hero-sub').textContent = curAgency.name + ' 전용 접수 시스템';
-}
+
+// 대리점명 헤더 표시
+(function initAgencyHeader() {
+  const curAgency = agencies.find(a => a.id === currentAgencyId);
+  const titleEl = document.querySelector('.hero-title');
+  const subEl   = document.querySelector('.hero-sub');
+  if (curAgency && curAgency.role !== 'super') {
+    if (titleEl) titleEl.innerHTML = '<span style="font-size:11px;opacity:.7;display:block;margin-bottom:2px">SGI 서울보증보험</span>' + curAgency.name;
+    if (subEl)   subEl.textContent = curAgency.name + ' 전용 온라인 접수 시스템';
+  }
+})();
+
 if (new URLSearchParams(window.location.search).get('tab') === 'status') {
   gotoSection('s-status');
   document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.htab')[3].classList.add('active');
 }
+
 </script>
+
 <!-- CONSULT MODAL -->
 <div class="modal-overlay" id="consultModal">
   <div class="modal" style="width:400px; max-width:90%">
@@ -1175,6 +1199,15 @@ document.querySelectorAll('.modal-overlay').forEach(mo=>{
         <div style="color:rgba(255,255,255,.65);font-size:13px">클릭하여 이 대리점으로 접속하기 →</div>
       </div>
     </div>`).join('');
+
+  // 직접 신청 버튼 추가
+  const skipBtn = document.createElement('button');
+  skipBtn.textContent = '대리점 선택 없이 보증보험 신청하기';
+  skipBtn.style.cssText = 'margin-top:24px;width:100%;padding:14px;background:transparent;border:1px solid rgba(255,255,255,.4);color:rgba(255,255,255,.8);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit';
+  skipBtn.onmouseover = function(){ this.style.background='rgba(255,255,255,.1)'; };
+  skipBtn.onmouseout  = function(){ this.style.background='transparent'; };
+  skipBtn.onclick = function() { overlay.style.display='none'; };
+  listEl.parentElement.appendChild(skipBtn);
 
   overlay.style.display = 'block';
 })();
