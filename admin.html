@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGI 관리자 — 대리점 통합 관리시스템</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1356A2;--blue2:#2A72CC;--blue-light:#E8F1FB;--blue-pale:#F0F6FF;--blue-dark:#0C3270;
+  --green:#0A6B50;--green-light:#E2F5EF;
+  --amber:#7D4800;--amber-light:#FEF3E2;
+  --red:#9B2222;--red-light:#FDECEA;
+  --teal:#0F7D62;--teal-light:#E0F4EE;
+  --bg:#F0F4FA;--bg2:#FFFFFF;--bg3:#E8EDF5;--bg4:#DDE4EF;
+  --border:#D4DBEA;--border2:#BEC8D8;
+  --text:#161E2E;--text2:#445060;--text3:#7B8BA0;
+  --nav-w:220px;
+  --r:8px;--rlg:12px;--rxl:18px;
+  --shadow:0 1px 3px rgba(0,0,0,.07);
+  --shadow-md:0 4px 16px rgba(0,0,0,.1);
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--nav-w);background:#0E2549;color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sb-logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);font-size:11px;font-weight:900;padding:3px 9px;border-radius:4px;letter-spacing:.8px;color:rgba(255,255,255,.9);display:inline-block;margin-bottom:8px}
+.sb-title{font-size:14px;font-weight:700;line-height:1.3}
+.sb-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.sb-section{padding:8px 10px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;margin-top:8px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;border-radius:8px;margin:2px 8px;transition:all .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;font-family:inherit;font-weight:500}
+.sb-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-item.active{background:rgba(42,114,204,.35);color:#fff}
+.sb-item .sb-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.sb-badge-count{margin-left:auto;background:#E24B4A;color:#fff;border-radius:10px;font-size:10px;padding:1px 7px;font-weight:700}
+.sb-foot{padding:16px;border-top:1px solid rgba(255,255,255,.1);margin-top:auto}
+.sb-foot a{font-size:12px;color:rgba(255,255,255,.5);text-decoration:none;display:block;padding:6px 0}
+.sb-foot a:hover{color:#fff}
+
+/* ── MAIN ── */
+.main-wrap{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+.topbar-left{font-size:15px;font-weight:700;color:var(--text)}
+.topbar-left span{font-size:12px;color:var(--text3);font-weight:400;margin-left:8px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;font-weight:600;transition:all .15s;font-family:inherit}
+.icon-btn:hover{background:var(--blue-light);color:var(--blue);border-color:var(--blue2)}
+.content{padding:24px;flex:1}
+.page{display:none}.page.active{display:block}
+.page-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.page-hd h2{font-size:20px;font-weight:700}
+.page-hd p{font-size:13px;color:var(--text3);margin-top:2px}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:16px 18px;box-shadow:var(--shadow)}
+.sc-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.sc-val{font-size:28px;font-weight:900;line-height:1;letter-spacing:-.5px}
+.sc-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.sc-bar{height:3px;background:var(--bg4);border-radius:2px;margin-top:10px;overflow:hidden}
+.sc-bar-fill{height:100%;border-radius:2px;background:var(--blue2)}
+
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg3)}
+.card-head h3{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.card-body{padding:18px}
+
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{padding:9px 12px;font-size:11px;font-weight:700;color:var(--text3);text-align:left;background:var(--bg3);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.data-table td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tbody tr:last-child td{border-bottom:none}
+.data-table tbody tr:hover td{background:var(--blue-pale);cursor:pointer}
+
+/* ── STATUS BADGES ── */
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;display:inline-block}
+.b-wait{background:var(--amber-light);color:var(--amber)}
+.b-review{background:var(--blue-light);color:var(--blue)}
+.b-approved{background:#EAF4DE;color:#2E6611}
+.b-issued{background:var(--teal-light);color:var(--teal)}
+.b-rejected{background:var(--red-light);color:var(--red)}
+.b-extra{background:#FCEAF0;color:#8B2D53}
+.b-active{background:var(--teal-light);color:var(--teal)}
+.b-expiring{background:var(--amber-light);color:var(--amber)}
+.b-expired{background:var(--red-light);color:var(--red)}
+.b-extended{background:var(--blue-light);color:var(--blue)}
+.b-terminated{background:var(--bg4);color:var(--text3)}
+
+/* ── FILTER ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.fb-input{flex:1;min-width:220px;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);font-family:inherit}
+.fb-select{padding:8px 12px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);font-family:inherit;font-weight:600}
+.f-chip{font-size:12px;padding:5px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--bg2);color:var(--text3);font-weight:600;white-space:nowrap;transition:all .15s}
+.f-chip:hover{border-color:var(--blue2);color:var(--blue)}
+.f-chip.on{background:var(--blue-light);color:var(--blue);border-color:var(--blue2)}
+
+/* ── DOC PROGRESS ── */
+.doc-prog{display:flex;align-items:center;gap:6px}
+.dp-bar{width:50px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.dp-fill{height:100%;background:var(--blue2);border-radius:2px}
+.dp-text{font-size:11px;color:var(--text3)}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 18px;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-dark)}
+.btn-secondary{background:var(--bg2);color:var(--text);border:1px solid var(--border2)}.btn-secondary:hover{background:var(--bg3)}
+.btn-success{background:var(--teal);color:#fff}.btn-success:hover{background:var(--green)}
+.btn-danger{background:#C0392B;color:#fff}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-xs{padding:3px 9px;font-size:11px}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.45);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border-radius:var(--rxl);width:720px;max-width:100%;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-md)}
+.modal.wide{width:880px}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.modal-head h3{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);padding:2px 8px;border-radius:4px;line-height:1}
+.modal-close:hover{background:var(--bg3)}
+.modal-body{padding:22px;overflow-y:auto;flex:1}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+
+/* ── TABS ── */
+.tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:18px}
+.tab-btn{padding:8px 18px;font-size:13px;border:none;background:none;cursor:pointer;color:var(--text3);font-weight:700;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:inherit}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── DETAIL GRID ── */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.df .df-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.df .df-val{font-size:14px;font-weight:700}
+.info-table{width:100%}
+.info-table td{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-table td:first-child{color:var(--text3);width:130px;font-weight:600}
+.info-table tr:last-child td{border-bottom:none}
+
+/* ── STATUS CHANGE ── */
+.status-change-row{display:flex;gap:8px;align-items:center;padding:12px 14px;background:var(--bg3);border-radius:var(--r);margin-bottom:14px}
+.status-change-row label{font-size:13px;color:var(--text3);white-space:nowrap;font-weight:600}
+.status-change-row select{flex:1;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-family:inherit}
+
+/* ── SMS ── */
+.sms-box{border:1px solid var(--border);border-radius:var(--rlg);padding:16px}
+.tpl-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tpl-btn{font-size:11px;padding:4px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--bg3);color:var(--text3);font-weight:600;transition:all .15s;font-family:inherit}
+.tpl-btn:hover{border-color:var(--blue2);color:var(--blue);background:var(--blue-light)}
+.sms-ta{width:100%;font-size:13px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:none;line-height:1.6;font-family:inherit}
+.sms-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.sms-count{font-size:11px;color:var(--text3);font-weight:600}
+
+/* ── LOAN RESULT ── */
+.calc-result{background:linear-gradient(135deg,var(--blue-pale),var(--blue-light));border:1px solid #C2D8F0;border-radius:var(--rlg);padding:16px;margin-top:12px}
+.amort-wrap{max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-top:10px}
+.amort-table{width:100%;border-collapse:collapse;font-size:12px}
+.amort-table th{padding:7px 10px;background:var(--bg3);border-bottom:1px solid var(--border);font-weight:700;color:var(--text3);text-align:right;position:sticky;top:0}
+.amort-table th:first-child{text-align:left}
+.amort-table td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text)}
+.amort-table td:first-child{text-align:left;color:var(--text2)}
+.amort-table tr:last-child td{border-bottom:none}
+
+/* ── LEASE ── */
+.req-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;background:var(--bg3)}
+.req-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700}
+.rb-green{background:var(--teal-light);color:var(--teal)}
+.rb-red{background:var(--red-light);color:var(--red)}
+.rb-blue{background:var(--blue-light);color:var(--blue)}
+.rb-gray{background:var(--bg4);color:var(--text3)}
+
+/* ── DDAY ── */
+.dday{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px}
+.dday.ok{background:var(--teal-light);color:var(--teal)}
+.dday.warn{background:var(--amber-light);color:var(--amber)}
+.dday.danger{background:var(--red-light);color:var(--red)}
+.dday.past{background:var(--bg4);color:var(--text3)}
+
+/* ── PROG ── */
+.prog-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue2),#61AEFF);border-radius:3px}
+
+/* ── ALERT BANNER ── */
+.alert-banner{background:var(--amber-light);border:1px solid #FAC775;border-radius:var(--r);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--amber);font-weight:600}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;justify-content:center;gap:4px;margin-top:14px}
+.pg{padding:5px 13px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--bg2);color:var(--text3);font-weight:600}
+.pg:hover{background:var(--blue-light);color:var(--blue)}
+.pg.active{background:var(--blue-light);color:var(--blue);border-color:var(--blue2)}
+
+/* ── DASHBOARD ── */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.dash-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:16px;box-shadow:var(--shadow)}
+.dash-item h4{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.bar-chart-item{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bci-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0;font-weight:500;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.bci-bar-wrap{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.bci-bar{height:100%;border-radius:3px;background:var(--blue2);transition:width .5s ease}
+.bci-val{font-size:12px;color:var(--text3);width:30px;text-align:right;font-weight:700}
+.recent-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.recent-item:last-child{border-bottom:none}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:13px 20px;font-size:13px;z-index:9999;display:none;font-weight:700;box-shadow:var(--shadow-md);max-width:320px}
+.toast.show{display:block}
+.toast.success{border-left:4px solid var(--teal);color:var(--teal)}
+.toast.info{border-left:4px solid var(--blue);color:var(--blue)}
+.toast.warn{border-left:4px solid var(--amber);color:var(--amber)}
+
+/* ── FORM ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row.c1{grid-template-columns:1fr}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr}
+.form-group label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:5px}
+.form-group label .req{color:#D94141;margin-left:2px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text);font-family:inherit}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--blue2)}
+.form-group textarea{resize:none;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-badge">SGI</div>
+    <div class="sb-title">서울보증보험<br>대리점 관리시스템</div>
+    <div class="sb-sub">Admin Dashboard</div>
+  </div>
+
+  <div class="sb-section">메인</div>
+  <button class="sb-item active" onclick="showPage('dashboard',this)"><span class="sb-icon">📊</span>대시보드</button>
+
+  <div class="sb-section">접수 관리</div>
+  <button class="sb-item" onclick="showPage('applications',this)"><span class="sb-icon">📥</span>접수 내역 <span class="sb-badge-count" id="sb-pending">0</span></button>
+  <button class="sb-item" onclick="showPage('contracts',this)"><span class="sb-icon">📋</span>계약 관리 <span class="sb-badge-count" id="sb-expiry">0</span></button>
+
+  <div class="sb-section">상품</div>
+  <button class="sb-item" onclick="showPage('products',this)"><span class="sb-icon">📦</span>상품 카탈로그</button>
+
+  <div class="sb-section">데이터</div>
+  <button class="sb-item" onclick="exportCSV()"><span class="sb-icon">📤</span>CSV 내보내기</button>
+  <button class="sb-item" onclick="exportJSON()"><span class="sb-icon">💾</span>JSON 내보내기</button>
+
+  <div class="sb-foot">
+    <a href="apply.html" target="_blank">↗ 신청자 페이지</a>
+    <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px">v1.0 — SGI Agency System</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-left" id="pageTitle">대시보드 <span>전체 현황</span></div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="refreshData()">🔄 새로고침</button>
+      <button class="icon-btn" onclick="exportCSV()">📥 CSV</button>
+      <button class="icon-btn" onclick="exportJSON()">📦 JSON</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ① 대시보드 -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-hd"><div><h2>전체 현황 대시보드</h2><p>오늘의 접수 및 계약 현황을 한눈에 확인하세요</p></div></div>
+      <div class="stats-row" id="dashStats"></div>
+      <div id="expiryAlerts"></div>
+      <div class="dash-grid">
+        <div class="dash-item">
+          <h4>상태별 접수 현황</h4>
+          <div id="statusChart"></div>
+        </div>
+        <div class="dash-item">
+          <h4>카테고리별 접수 현황</h4>
+          <div id="catChart"></div>
+        </div>
+      </div>
+      <div class="dash-item">
+        <h4>최근 접수 내역</h4>
+        <div id="recentApps"></div>
+      </div>
+    </div>
+
+    <!-- ② 접수 관리 -->
+    <div class="page" id="page-applications">
+      <div class="page-hd">
+        <div><h2>접수 내역 관리</h2><p>신청 상태 변경, 서류 확인, 문자 발송</p></div>
+      </div>
+      <div class="filter-bar">
+        <input type="text" class="fb-input" id="appSearch" placeholder="신청인 · 회사명 · 접수번호 · 상품명 검색..." oninput="renderApps()">
+        <select class="fb-select" id="appStatusF" onchange="renderApps()">
+          <option value="">전체 상태</option>
+          <option value="접수대기">접수대기</option>
+          <option value="서류검토">서류검토</option>
+          <option value="승인완료">승인완료</option>
+          <option value="증권발행">증권발행</option>
+          <option value="반려">반려</option>
+          <option value="추가서류요청">추가서류요청</option>
+        </select>
+        <select class="fb-select" id="appCatF" onchange="renderApps()">
+          <option value="">전체 카테고리</option>
+        </select>
+        <select class="fb-select" id="appProductF" onchange="renderApps()">
+          <option value="">전체 상품</option>
+        </select>
+        <span class="f-chip on" data-f="all" onclick="appChip(this)">전체</span>
+        <span class="f-chip" data-f="today" onclick="appChip(this)">오늘</span>
+        <span class="f-chip" data-f="week" onclick="appChip(this)">이번주</span>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>접수번호</th><th>신청인/회사</th><th>상품명</th><th>카테고리</th>
+              <th>보증금액</th><th>접수일</th><th>서류</th><th>상태</th><th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="appTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="appPaging"></div>
+    </div>
+
+    <!-- ③ 계약 관리 -->
+    <div class="page" id="page-contracts">
+      <div class="page-hd">
+        <div><h2>계약 관리</h2><p>진행 중인 계약 만기·갱신·해지 관리</p></div>
+        <button class="btn btn-primary btn-sm" onclick="openNewContract()">+ 계약 등록</button>
+      </div>
+      <div id="contractAlerts"></div>
+      <div class="filter-bar">
+        <input type="text" class="fb-input" id="ctSearch" placeholder="계약자 · 계약번호 · 상품명 검색..." oninput="renderContracts()">
+        <select class="fb-select" id="ctStatusF" onchange="renderContracts()">
+          <option value="">전체 상태</option>
+          <option value="활성">활성</option><option value="만기임박">만기임박</option>
+          <option value="만기">만기</option><option value="연장">연장</option><option value="해지">해지</option>
+        </select>
+        <select class="fb-select" id="ctProductF" onchange="renderContracts()">
+          <option value="">전체 상품</option>
+        </select>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>계약번호</th><th>계약자</th><th>상품명</th><th>보증금액</th>
+              <th>계약기간</th><th>만기일</th><th>D-Day</th><th>상태</th><th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="ctTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="ctPaging"></div>
+    </div>
+
+    <!-- ④ 상품 카탈로그 -->
+    <div class="page" id="page-products">
+      <div class="page-hd"><div><h2>상품 카탈로그</h2><p>SGI 서울보증보험 전체 취급 상품 — ${SGI_PRODUCTS?.length||0}종</p></div></div>
+      <div class="filter-bar">
+        <input type="text" class="fb-input" id="prodSearch" placeholder="상품명 검색..." oninput="renderProductCatalog()">
+        <select class="fb-select" id="prodCatF" onchange="renderProductCatalog()">
+          <option value="">전체 카테고리</option>
+        </select>
+      </div>
+      <div id="productCatalogGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main-wrap -->
+
+<!-- MODAL: 접수 상세 -->
+<div class="modal-overlay" id="appModal">
+  <div class="modal wide">
+    <div class="modal-head"><h3 id="appModalTitle">접수 상세</h3><button class="modal-close" onclick="closeModal('appModal')">✕</button></div>
+    <div class="modal-body" id="appModalBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: 계약 상세 -->
+<div class="modal-overlay" id="ctModal">
+  <div class="modal wide">
+    <div class="modal-head"><h3 id="ctModalTitle">계약 상세</h3><button class="modal-close" onclick="closeModal('ctModal')">✕</button></div>
+    <div class="modal-body" id="ctModalBody"></div>
+    <div class="modal-foot"><button class="btn btn-secondary" onclick="closeModal('ctModal')">닫기</button></div>
+  </div>
+</div>
+
+<!-- MODAL: 계약 신규 등록 -->
+<div class="modal-overlay" id="newCtModal">
+  <div class="modal">
+    <div class="modal-head"><h3>계약 신규 등록</h3><button class="modal-close" onclick="closeModal('newCtModal')">✕</button></div>
+    <div class="modal-body" id="newCtBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+// ── DATA ──
+const STORAGE_KEY = 'sgi_applications';
+const CT_KEY      = 'sgi_contracts';
+
+function loadApps() {
+  try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):[...SAMPLE_APPLICATIONS]; }
+  catch { return [...SAMPLE_APPLICATIONS]; }
+}
+function saveApps(a) { localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }
+function loadContracts() {
+  try { const r=localStorage.getItem(CT_KEY); return r?JSON.parse(r):[...SAMPLE_CONTRACTS]; }
+  catch { return [...SAMPLE_CONTRACTS]; }
+}
+function saveContracts(c) { localStorage.setItem(CT_KEY, JSON.stringify(c)); }
+
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_KEY || e.key === CT_KEY) {
+    apps = loadApps();
+    contracts = loadContracts();
+    updateSideBadges();
+    const activePage = document.querySelector('.page.active');
+    if (activePage && activePage.id === 'page-applications') renderApps();
+    if (activePage && activePage.id === 'page-contracts') renderContracts();
+    if (activePage && activePage.id === 'page-dashboard') renderDashboard();
+  }
+});
+
+let apps      = loadApps();
+let contracts = loadContracts();
+
+const STATUS_MAP_CLS = {
+  '접수대기':'b-wait','서류검토':'b-review','승인완료':'b-approved',
+  '증권발행':'b-issued','반려':'b-rejected','추가서류요청':'b-extra'
+};
+const CT_STATUS_MAP = {
+  '활성':'b-active','만기임박':'b-expiring','만기':'b-expired','연장':'b-extended','해지':'b-terminated'
+};
+const TYPE_BADGE = {'연장요청':'rb-green','퇴거요청':'rb-red','계약해지 통보':'rb-red','수리요청':'rb-blue','임대료인상 통보':'rb-gray','기타':'rb-gray'};
+
+let appPage=1, ctPage=1;
+const PG=8;
+let currentAppId=null, currentCtId=null;
+
+// ── PAGE SWITCH ──
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titles = {dashboard:'대시보드',applications:'접수 내역 관리',contracts:'계약 관리',products:'상품 카탈로그'};
+  const subs   = {dashboard:'전체 현황',applications:'신청 조회 및 상태관리',contracts:'계약 만기·갱신 관리',products:'전체 상품 목록'};
+  document.getElementById('pageTitle').innerHTML=`${titles[name]||''} <span>${subs[name]||''}</span>`;
+  if (name==='dashboard')    renderDashboard();
+  if (name==='applications') { fillAppFilters(); renderApps(); }
+  if (name==='contracts')    { fillCtFilters(); renderContracts(); renderContractAlerts(); }
+  if (name==='products')     { fillProductFilters(); renderProductCatalog(); }
+}
+
+function refreshData() {
+  apps=loadApps(); contracts=loadContracts();
+  updateSideBadges();
+  showToast('데이터가 새로고침되었습니다.','info');
+}
+
+// ── SIDEBAR BADGES ──
+function updateSideBadges() {
+  document.getElementById('sb-pending').textContent = apps.filter(a=>a.status==='접수대기').length;
+  const exp = contracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';}).length;
+  document.getElementById('sb-expiry').textContent = exp;
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const total=apps.length, wait=apps.filter(a=>a.status==='접수대기').length;
+  const rev=apps.filter(a=>a.status==='서류검토').length, appr=apps.filter(a=>a.status==='승인완료').length;
+  const iss=apps.filter(a=>a.status==='증권발행').length;
+  const ctActive=contracts.filter(c=>c.status==='활성'||c.status==='연장').length;
+
+  document.getElementById('dashStats').innerHTML=`
+    <div class="stat-card"><div class="sc-label">전체 접수</div><div class="sc-val">${total}</div><div class="sc-sub">누적 접수건수</div><div class="sc-bar"><div class="sc-bar-fill" style="width:100%"></div></div></div>
+    <div class="stat-card"><div class="sc-label">접수대기</div><div class="sc-val" style="color:var(--amber)">${wait}</div><div class="sc-sub">처리 필요</div><div class="sc-bar"><div class="sc-bar-fill" style="width:${total?Math.round(wait/total*100):0}%;background:#EF9F27"></div></div></div>
+    <div class="stat-card"><div class="sc-label">서류검토</div><div class="sc-val" style="color:var(--blue)">${rev}</div><div class="sc-sub">검토 진행중</div><div class="sc-bar"><div class="sc-bar-fill" style="width:${total?Math.round(rev/total*100):0}%"></div></div></div>
+    <div class="stat-card"><div class="sc-label">승인·발행</div><div class="sc-val" style="color:var(--teal)">${appr+iss}</div><div class="sc-sub">처리 완료</div><div class="sc-bar"><div class="sc-bar-fill" style="width:${total?Math.round((appr+iss)/total*100):0}%;background:var(--teal)"></div></div></div>
+    <div class="stat-card"><div class="sc-label">활성 계약</div><div class="sc-val" style="color:var(--green)">${ctActive}</div><div class="sc-sub">관리중인 계약</div><div class="sc-bar"><div class="sc-bar-fill" style="width:100%;background:var(--green)"></div></div></div>
+  `;
+
+  // 만기 임박 알림
+  const expiring=contracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';});
+  document.getElementById('expiryAlerts').innerHTML=expiring.map(c=>`
+    <div class="alert-banner">⚠️ <strong>${c.name}</strong> — ${c.product} 계약이 <strong>${calcDday(c.endDate)}일</strong> 후 만기됩니다 (${c.endDate})</div>`).join('');
+
+  // 상태별 차트
+  const statusData=[
+    {k:'접수대기',v:wait,c:'var(--amber)'},
+    {k:'서류검토',v:rev,c:'var(--blue)'},
+    {k:'승인완료',v:appr,c:'#2E6611'},
+    {k:'증권발행',v:iss,c:'var(--teal)'},
+    {k:'반려',v:apps.filter(a=>a.status==='반려').length,c:'var(--red)'},
+  ];
+  const maxS=Math.max(...statusData.map(d=>d.v),1);
+  document.getElementById('statusChart').innerHTML=statusData.map(d=>`
+    <div class="bar-chart-item">
+      <div class="bci-label">${d.k}</div>
+      <div class="bci-bar-wrap"><div class="bci-bar" style="width:${Math.round(d.v/maxS*100)}%;background:${d.c}"></div></div>
+      <div class="bci-val">${d.v}</div>
+    </div>`).join('');
+
+  // 카테고리별 차트
+  const catCounts={};
+  apps.forEach(a=>{
+    const p=SGI_PRODUCTS.find(x=>x.id===a.productId);
+    const cat=p?.cat||a.product;
+    catCounts[cat]=(catCounts[cat]||0)+1;
+  });
+  const maxC=Math.max(...Object.values(catCounts),1);
+  document.getElementById('catChart').innerHTML=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div class="bar-chart-item">
+      <div class="bci-label" title="${k}">${k}</div>
+      <div class="bci-bar-wrap"><div class="bci-bar" style="width:${Math.round(v/maxC*100)}%"></div></div>
+      <div class="bci-val">${v}</div>
+    </div>`).join('');
+
+  // 최근 접수
+  document.getElementById('recentApps').innerHTML=apps.slice(0,6).map(a=>`
+    <div class="recent-item">
+      <div style="flex:1;min-width:0">
+        <strong style="font-size:13px">${a.name}</strong>
+        <span style="font-size:12px;color:var(--text3);margin-left:8px">${a.product}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <span style="font-size:12px;color:var(--text3)">${a.date}</span>
+        <span class="badge ${STATUS_MAP_CLS[a.status]||'b-wait'}">${a.status}</span>
+        <button class="btn btn-secondary btn-xs" onclick="openAppModal('${a.id}')">상세</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── APP FILTERS ──
+function fillAppFilters() {
+  const cats=[...new Set(SGI_PRODUCTS.map(p=>p.cat))];
+  const catEl=document.getElementById('appCatF');
+  catEl.innerHTML='<option value="">전체 카테고리</option>'+cats.map(c=>`<option>${c}</option>`).join('');
+  const prods=[...new Set(apps.map(a=>a.product))];
+  const prodEl=document.getElementById('appProductF');
+  prodEl.innerHTML='<option value="">전체 상품</option>'+prods.map(p=>`<option>${p}</option>`).join('');
+}
+
+function renderApps() {
+  const q=(document.getElementById('appSearch')?.value||'').toLowerCase();
+  const sf=document.getElementById('appStatusF')?.value||'';
+  const cf=document.getElementById('appCatF')?.value||'';
+  const pf=document.getElementById('appProductF')?.value||'';
+  let filtered=apps.filter(a=>{
+    const prodObj=SGI_PRODUCTS.find(x=>x.id===a.productId);
+    const ms=!q||(a.id+a.name+a.product+a.contact).toLowerCase().includes(q);
+    const mst=!sf||a.status===sf;
+    const mc=!cf||(prodObj?.cat===cf);
+    const mp=!pf||a.product===pf;
+    return ms&&mst&&mc&&mp;
+  });
+  const total=filtered.length, pages=Math.max(1,Math.ceil(total/PG));
+  if (appPage>pages) appPage=1;
+  const paged=filtered.slice((appPage-1)*PG, appPage*PG);
+
+  document.getElementById('appTableBody').innerHTML=paged.length?paged.map(a=>{
+    const p=SGI_PRODUCTS.find(x=>x.id===a.productId);
+    const dc=Object.keys(a.docs).length, dd=Object.values(a.docs).filter(Boolean).length;
+    return `<tr onclick="openAppModal('${a.id}')">
+      <td style="font-size:11px;color:var(--text3);font-weight:700">${a.id}</td>
+      <td><strong>${a.name}</strong><br><span style="font-size:11px;color:var(--text3)">${a.contact}</span></td>
+      <td>${a.product}</td>
+      <td style="font-size:11px"><span class="badge b-review" style="font-size:10px">${p?.cat||'-'}</span></td>
+      <td style="font-size:12px">${a.amount.toLocaleString()}원</td>
+      <td style="font-size:11px;color:var(--text3)">${a.date}</td>
+      <td class="doc-prog">
+        <div class="dp-bar"><div class="dp-fill" style="width:${dc?Math.round(dd/dc*100):0}%"></div></div>
+        <span class="dp-text">${dd}/${dc}</span>
+      </td>
+      <td><span class="badge ${STATUS_MAP_CLS[a.status]||'b-wait'}">${a.status}</span></td>
+      <td><button class="btn btn-secondary btn-xs" onclick="event.stopPropagation();openAppModal('${a.id}')">상세</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text3)">검색 결과가 없습니다</td></tr>';
+
+  renderPaging('appPaging', pages, appPage, p=>{appPage=p;renderApps();});
+}
+
+function appChip(el) {
+  document.querySelectorAll('.f-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderApps();
+}
+
+// ── APP MODAL ──
+function openAppModal(id) {
+  currentAppId=id;
+  const a=apps.find(x=>x.id===id);
+  if (!a) return;
+  const p=SGI_PRODUCTS.find(x=>x.id===a.productId)||{icon:'📄',cat:'-',docs:[],optDocs:[]};
+  document.getElementById('appModalTitle').textContent=a.id+' — '+a.name;
+
+  const allDocs=[...p.docs.map(d=>({name:d,req:true})),...(p.optDocs||[]).map(d=>({name:d,req:false}))];
+  const docHtml=allDocs.length?`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      ${allDocs.map(d=>`
+        <div style="display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--r);background:${a.docs[d.name]?'var(--teal-light)':'var(--bg3)'};border:1px solid ${a.docs[d.name]?'#A8DCC7':'var(--border)'};font-size:12px;color:${a.docs[d.name]?'var(--teal)':'var(--text3)'}">
+          ${a.docs[d.name]?'✓':'○'} ${d.name} <span style="font-size:10px;margin-left:auto">${d.req?'필수':'선택'}</span>
+        </div>`).join('')}
+    </div>`:
+    '<div style="font-size:12px;color:var(--text3)">업로드된 서류 없음</div>';
+
+  document.getElementById('appModalBody').innerHTML=`
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(this,'am-info')">기본 정보</button>
+      <button class="tab-btn" onclick="switchTab(this,'am-docs')">서류 현황</button>
+      <button class="tab-btn" onclick="switchTab(this,'am-sms')">문자 발송</button>
+    </div>
+    <div class="tab-panel active" id="am-info">
+      <div class="detail-grid">
+        <div class="df"><div class="df-label">접수번호</div><div class="df-val">${a.id}</div></div>
+        <div class="df"><div class="df-label">신청인</div><div class="df-val">${a.name}</div></div>
+        <div class="df"><div class="df-label">연락처</div><div class="df-val">${a.contact}</div></div>
+        <div class="df"><div class="df-label">카테고리</div><div class="df-val">${p.cat||'-'}</div></div>
+        <div class="df"><div class="df-label">상품명</div><div class="df-val">${a.product}</div></div>
+        <div class="df"><div class="df-label">보증금액</div><div class="df-val">${a.amount.toLocaleString()}원</div></div>
+        <div class="df"><div class="df-label">접수일</div><div class="df-val">${a.date}</div></div>
+        <div class="df"><div class="df-label">현재 상태</div><div class="df-val"><span class="badge ${STATUS_MAP_CLS[a.status]||'b-wait'}">${a.status}</span></div></div>
+        ${a.fieldsData ? Object.entries(a.fieldsData).map(([k,v]) => \`<div class="df"><div class="df-label">\${k}</div><div class="df-val">\${v||'-'}</div></div>\`).join('') : ''}
+      </div>
+      ${a.memo?`<div style="background:var(--bg3);border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--text2)">📌 메모: ${a.memo}</div>`:''}
+      <div class="status-change-row">
+        <label>상태 변경</label>
+        <select id="app-status-sel">
+          ${['접수대기','서류검토','승인완료','증권발행','반려','추가서류요청'].map(s=>`<option${s===a.status?' selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="updateAppStatus('${a.id}')">저장</button>
+      </div>
+      <div class="form-row c1">
+        <div class="form-group">
+          <label>메모 수정</label>
+          <textarea id="app-memo" rows="2">${a.memo||''}</textarea>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="saveAppMemo('${a.id}')">메모 저장</button>
+    </div>
+    <div class="tab-panel" id="am-docs">${docHtml}</div>
+    <div class="tab-panel" id="am-sms">
+      <div class="sms-box">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text2)">수신: ${a.name} (${a.contact})</div>
+        <div class="tpl-row">
+          ${Object.keys(SMS_TEMPLATES).map(k=>`<button class="tpl-btn" onclick="setAppSms('${k}','${a.id}')">${k}</button>`).join('')}
+        </div>
+        <textarea class="sms-ta" id="app-sms-ta" rows="4" oninput="updateSmsCount('app-sms')" placeholder="내용을 입력하거나 템플릿을 선택하세요"></textarea>
+        <div class="sms-foot">
+          <span class="sms-count" id="app-sms-count">0 / 90자</span>
+          <button class="btn btn-success btn-sm" onclick="sendAppSms('${a.id}')">📨 문자 발송</button>
+        </div>
+      </div>
+    </div>
+  `;
+  openModal('appModal');
+}
+
+function updateAppStatus(id) {
+  const a=apps.find(x=>x.id===id);
+  const v=document.getElementById('app-status-sel')?.value;
+  if (!a||!v) return;
+  a.status=v; saveApps(apps); updateSideBadges();
+  showToast('상태가 변경되었습니다: '+v,'info');
+}
+function saveAppMemo(id) {
+  const a=apps.find(x=>x.id===id);
+  if (!a) return;
+  a.memo=document.getElementById('app-memo')?.value||'';
+  saveApps(apps);
+  showToast('메모가 저장되었습니다.','success');
+}
+function setAppSms(type, id) {
+  const a=apps.find(x=>x.id===id);
+  if (!a||!SMS_TEMPLATES[type]) return;
+  document.getElementById('app-sms-ta').value=SMS_TEMPLATES[type](a);
+  updateSmsCount('app-sms');
+}
+function sendAppSms(id) {
+  const ta=document.getElementById('app-sms-ta');
+  if (!ta?.value.trim()){showToast('발송 내용을 입력해주세요','warn');return;}
+  showToast('문자가 발송되었습니다.','success');
+  ta.value=''; updateSmsCount('app-sms');
+}
+
+// ── CONTRACTS ──
+function fillCtFilters() {
+  const prods=[...new Set(contracts.map(c=>c.product))];
+  const el=document.getElementById('ctProductF');
+  el.innerHTML='<option value="">전체 상품</option>'+prods.map(p=>`<option>${p}</option>`).join('');
+}
+
+function renderContracts() {
+  const q=(document.getElementById('ctSearch')?.value||'').toLowerCase();
+  const sf=document.getElementById('ctStatusF')?.value||'';
+  const pf=document.getElementById('ctProductF')?.value||'';
+  let filtered=contracts.filter(c=>{
+    const ms=!q||(c.id+c.name+c.product).toLowerCase().includes(q);
+    return ms&&(!sf||c.status===sf)&&(!pf||c.product===pf);
+  });
+  const total=filtered.length, pages=Math.max(1,Math.ceil(total/PG));
+  if (ctPage>pages) ctPage=1;
+  const paged=filtered.slice((ctPage-1)*PG, ctPage*PG);
+  document.getElementById('ctTableBody').innerHTML=paged.length?paged.map(c=>{
+    const d=calcDday(c.endDate);
+    return `<tr onclick="openCtModal('${c.id}')">
+      <td style="font-size:11px;color:var(--text3);font-weight:700">${c.id}</td>
+      <td><strong>${c.name}</strong><br><span style="font-size:11px;color:var(--text3)">${c.contact}</span></td>
+      <td>${c.product}</td>
+      <td style="font-size:12px">${c.amount.toLocaleString()}원</td>
+      <td style="font-size:11px;color:var(--text2)">${c.startDate}<br>→ ${c.endDate}</td>
+      <td style="font-size:12px">${c.endDate}</td>
+      <td>${ddayBadge(d)}</td>
+      <td><span class="badge ${CT_STATUS_MAP[c.status]||'b-active'}">${c.status}</span></td>
+      <td><button class="btn btn-secondary btn-xs" onclick="event.stopPropagation();openCtModal('${c.id}')">상세</button></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text3)">등록된 계약이 없습니다</td></tr>';
+  renderPaging('ctPaging', pages, ctPage, p=>{ctPage=p;renderContracts();});
+}
+
+function renderContractAlerts() {
+  const exp=contracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';});
+  document.getElementById('contractAlerts').innerHTML=exp.map(c=>`
+    <div class="alert-banner">⚠️ <strong>${c.name}</strong> — ${c.product} 계약이 <strong>${calcDday(c.endDate)}일</strong> 후 만기됩니다 (${c.endDate})
+      <button class="btn btn-xs" style="margin-left:auto;background:var(--amber-light);border:1px solid #FAC775;color:var(--amber);font-family:inherit;cursor:pointer" onclick="openCtModal('${c.id}')">확인</button>
+    </div>`).join('');
+}
+
+function openCtModal(id) {
+  currentCtId=id;
+  const c=contracts.find(x=>x.id===id);
+  if (!c) return;
+  document.getElementById('ctModalTitle').textContent=c.id+' — '+c.name;
+  const d=calcDday(c.endDate);
+  const hasLease=['전세금반환보증보험','전세금보장신용보험','임대주택보증보험','상가보증금보장신용보험','전세임대주택신용보험'].includes(c.product);
+  const hasLoan=['전세금반환보증보험','전세금보장신용보험','개인사업자금융신용보험','개인금융신용보험','모기지보험(MI)','MCI','생활안정자금보증보험','신용보증(대출)'].includes(c.product);
+
+  let addonTab='', addonHtml='';
+  if (hasLease||hasLoan||c.progress!==undefined) {
+    addonTab=`<button class="tab-btn" onclick="switchTab(this,'ct-addon')">부가 기능</button>`;
+    if (hasLease) addonHtml+=buildCtLeaseHtml(c);
+    if (hasLoan && c.loanInfo) addonHtml+=buildCtLoanHtml(c);
+    if (c.progress!==undefined) addonHtml+=buildCtProgressHtml(c);
+  }
+
+  const reqHtml=c.requests&&c.requests.length?c.requests.map(r=>`
+    <div class="req-item">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="req-badge ${TYPE_BADGE[r.type]||'rb-gray'}">${r.type}</span>
+        <span style="font-size:13px">${r.note||'내용 없음'}</span>
+      </div>
+      <span style="font-size:11px;color:var(--text3)">${r.date}</span>
+    </div>`).join(''):
+    '<div style="font-size:12px;color:var(--text3)">요청 이력 없음</div>';
+
+  document.getElementById('ctModalBody').innerHTML=`
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(this,'ct-info')">기본 정보</button>
+      <button class="tab-btn" onclick="switchTab(this,'ct-requests')">요청 이력</button>
+      ${addonTab}
+      <button class="tab-btn" onclick="switchTab(this,'ct-sms')">문자 발송</button>
+    </div>
+    <div class="tab-panel active" id="ct-info">
+      <div class="detail-grid">
+        <div class="df"><div class="df-label">계약번호</div><div class="df-val">${c.id}</div></div>
+        <div class="df"><div class="df-label">계약자</div><div class="df-val">${c.name}</div></div>
+        <div class="df"><div class="df-label">연락처</div><div class="df-val">${c.contact}</div></div>
+        <div class="df"><div class="df-label">상품명</div><div class="df-val">${c.product}</div></div>
+        <div class="df"><div class="df-label">보증금액</div><div class="df-val">${c.amount.toLocaleString()}원</div></div>
+        <div class="df"><div class="df-label">계약 상태</div><div class="df-val"><span class="badge ${CT_STATUS_MAP[c.status]||'b-active'}">${c.status}</span></div></div>
+        <div class="df"><div class="df-label">계약 시작</div><div class="df-val">${c.startDate}</div></div>
+        <div class="df"><div class="df-label">계약 만기</div><div class="df-val">${c.endDate} ${ddayBadge(d)}</div></div>
+      </div>
+      ${c.memo?`<div style="background:var(--bg3);border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--text2)">📌 ${c.memo}</div>`:''}
+      <div class="status-change-row">
+        <label>상태 변경</label>
+        <select id="ct-status-sel">
+          ${['활성','만기임박','만기','연장','해지'].map(s=>`<option${s===c.status?' selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="updateCtStatus('${c.id}')">저장</button>
+      </div>
+    </div>
+    <div class="tab-panel" id="ct-requests">
+      ${reqHtml}
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <select id="ct-rt" style="font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r)">
+          <option>연장요청</option><option>퇴거요청</option><option>임대료인상 통보</option>
+          <option>수리요청</option><option>계약해지 통보</option><option>기타</option>
+        </select>
+        <input type="text" id="ct-rn" placeholder="요청 내용 입력..." style="flex:1;min-width:160px;font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r)">
+        <button class="btn btn-secondary btn-sm" onclick="addCtRequest('${c.id}')">이력 추가</button>
+      </div>
+    </div>
+    ${addonTab ? `<div class="tab-panel" id="ct-addon">${addonHtml}</div>` : ''}
+    <div class="tab-panel" id="ct-sms">
+      <div class="sms-box">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text2)">수신: ${c.name} (${c.contact})</div>
+        <div class="tpl-row">
+          ${Object.keys(SMS_TEMPLATES).map(k=>`<button class="tpl-btn" onclick="setCtSms('${k}','${c.id}')">${k}</button>`).join('')}
+        </div>
+        <textarea class="sms-ta" id="ct-sms-ta" rows="4" oninput="updateSmsCount('ct-sms')" placeholder="내용을 입력하거나 템플릿을 선택하세요"></textarea>
+        <div class="sms-foot">
+          <span class="sms-count" id="ct-sms-count">0 / 90자</span>
+          <button class="btn btn-success btn-sm" onclick="sendCtSms()">📨 문자 발송</button>
+        </div>
+      </div>
+    </div>
+  `;
+  openModal('ctModal');
+}
+
+function buildCtLeaseHtml(c) {
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="card-head"><h3>📋 임차계약 정보</h3></div>
+    <div class="card-body">
+      <table class="info-table">
+        <tr><td>임대인</td><td>${c.landlord||'-'}</td></tr>
+        <tr><td>임대인 연락처</td><td>${c.landlordTel||'-'}</td></tr>
+        <tr><td>건물 주소</td><td>${c.address||'-'}</td></tr>
+        ${c.units?`<tr><td>임대 세대수</td><td>${c.units}세대</td></tr>`:''}
+      </table>
+    </div>
+  </div>`;
+}
+
+function buildCtLoanHtml(c) {
+  const li=c.loanInfo;
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="card-head"><h3>💰 대출 정보</h3></div>
+    <div class="card-body">
+      <table class="info-table">
+        <tr><td>대출원금</td><td>${li.principal.toLocaleString()}원</td></tr>
+        <tr><td>연이율</td><td>${li.rate}%</td></tr>
+        <tr><td>대출기간</td><td>${li.months}개월</td></tr>
+        <tr><td>상환방식</td><td>${li.type}</td></tr>
+      </table>
+      <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="showCtLoanCalc('${c.id}')">상환 계획 조회</button>
+      <div id="ct-loan-result"></div>
+    </div>
+  </div>`;
+}
+
+function buildCtProgressHtml(c) {
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="card-head"><h3>📊 공정 진행률</h3></div>
+    <div class="card-body">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+        <span style="color:var(--text3)">진행률</span>
+        <span style="font-weight:700" id="ct-prog-label">${c.progress||0}%</span>
+      </div>
+      <div class="prog-bar" style="height:10px"><div class="prog-fill" style="width:${c.progress||0}%"></div></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:12px">
+        <label style="font-size:12px;color:var(--text2)">진행률 수정</label>
+        <input type="number" id="ct-prog-input" value="${c.progress||0}" min="0" max="100" style="width:70px;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r)">
+        <button class="btn btn-secondary btn-xs" onclick="updateCtProgress('${c.id}')">저장</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showCtLoanCalc(id) {
+  const c=contracts.find(x=>x.id===id);
+  if (!c||!c.loanInfo) return;
+  const {principal,rate,months,type}=c.loanInfo;
+  const r=rate/100/12; let rows=[];
+  if (type==='원리금균등') {
+    const mp=r===0?principal/months:principal*r*Math.pow(1+r,months)/(Math.pow(1+r,months)-1);
+    let bal=principal;
+    for (let m=1;m<=Math.min(months,24);m++){
+      const int=bal*r,pp=mp-int; bal-=pp;
+      rows.push({m,mp:Math.round(mp),int:Math.round(int),pp:Math.round(pp),bal:Math.max(0,Math.round(bal))});
+    }
+  }
+  const el=document.getElementById('ct-loan-result');
+  if (!el||!rows.length) return;
+  el.innerHTML=`<div class="amort-wrap" style="margin-top:10px"><table class="amort-table">
+    <thead><tr><th>회차</th><th>월납입액</th><th>이자</th><th>원금</th><th>잔액</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.m}회</td><td>${r.mp.toLocaleString()}</td><td>${r.int.toLocaleString()}</td><td>${r.pp.toLocaleString()}</td><td>${r.bal.toLocaleString()}</td></tr>`).join('')}</tbody>
+  </table></div>${months>24?`<div style="font-size:11px;color:var(--text3);margin-top:4px;text-align:center">처음 24개월만 표시</div>`:''}`;
+}
+
+function addCtRequest(id) {
+  const c=contracts.find(x=>x.id===id);
+  if (!c) return;
+  const type=document.getElementById('ct-rt')?.value;
+  const note=document.getElementById('ct-rn')?.value||'';
+  if (!c.requests) c.requests=[];
+  c.requests.push({type,note,date:today()});
+  saveContracts(contracts);
+  openCtModal(id);
+  showToast('요청 이력이 추가되었습니다.','success');
+}
+
+function updateCtStatus(id) {
+  const c=contracts.find(x=>x.id===id);
+  const v=document.getElementById('ct-status-sel')?.value;
+  if (!c||!v) return;
+  c.status=v; saveContracts(contracts); updateSideBadges();
+  renderContracts(); renderContractAlerts();
+  showToast('계약 상태가 변경되었습니다: '+v,'info');
+}
+
+function updateCtProgress(id) {
+  const c=contracts.find(x=>x.id===id);
+  const v=parseInt(document.getElementById('ct-prog-input')?.value||'0');
+  if (!c) return;
+  c.progress=v; saveContracts(contracts);
+  showToast('진행률이 업데이트되었습니다: '+v+'%','success');
+}
+
+function setCtSms(type, id) {
+  const c=contracts.find(x=>x.id===id);
+  if (!c||!SMS_TEMPLATES[type]) return;
+  document.getElementById('ct-sms-ta').value=SMS_TEMPLATES[type]({name:c.name,product:c.product});
+  updateSmsCount('ct-sms');
+}
+function sendCtSms() {
+  const ta=document.getElementById('ct-sms-ta');
+  if (!ta?.value.trim()){showToast('발송 내용을 입력해주세요','warn');return;}
+  showToast('문자가 발송되었습니다.','success');
+  ta.value=''; updateSmsCount('ct-sms');
+}
+
+// ── NEW CONTRACT ──
+function openNewContract() {
+  document.getElementById('newCtBody').innerHTML=`
+    <div class="form-row">
+      <div class="form-group"><label>계약자명<span class="req">*</span></label><input type="text" id="nc-name" placeholder="계약자 또는 회사명"></div>
+      <div class="form-group"><label>연락처</label><input type="text" id="nc-contact" placeholder="010-0000-0000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>상품명<span class="req">*</span></label>
+        <select id="nc-product">${SGI_PRODUCTS.map(p=>`<option>${p.name}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label>보증금액</label><input type="text" id="nc-amount" placeholder="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>계약 시작일</label><input type="date" id="nc-start"></div>
+      <div class="form-group"><label>계약 만기일</label><input type="date" id="nc-end"></div>
+    </div>
+    <div class="form-row c1">
+      <div class="form-group"><label>메모</label><textarea rows="2" id="nc-memo" placeholder="특이사항"></textarea></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn btn-secondary" onclick="closeModal('newCtModal')">취소</button>
+      <button class="btn btn-primary" onclick="addNewContract()">계약 등록</button>
+    </div>`;
+  openModal('newCtModal');
+}
+
+function addNewContract() {
+  const name=document.getElementById('nc-name')?.value?.trim()||'';
+  if (!name){showToast('계약자명을 입력해주세요','warn');return;}
+  const newId='C'+new Date().getFullYear()+'-'+String(contracts.length+10).padStart(3,'0');
+  contracts.unshift({
+    id:newId, appId:null, name, contact:document.getElementById('nc-contact')?.value||'',
+    product:document.getElementById('nc-product')?.value||SGI_PRODUCTS[0].name,
+    amount:parseNum(document.getElementById('nc-amount')?.value||'0'),
+    startDate:document.getElementById('nc-start')?.value||today(),
+    endDate:document.getElementById('nc-end')?.value||today(),
+    status:'활성', memo:document.getElementById('nc-memo')?.value||'',
+    requests:[], loanInfo:null, landlord:'-', landlordTel:'-', address:'-',
+  });
+  saveContracts(contracts);
+  closeModal('newCtModal');
+  renderContracts(); renderContractAlerts(); updateSideBadges();
+  showToast('계약이 등록되었습니다: '+newId,'success');
+}
+
+// ── PRODUCT CATALOG ──
+function fillProductFilters() {
+  const el=document.getElementById('prodCatF');
+  el.innerHTML='<option value="">전체 카테고리</option>'+SGI_CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+}
+
+function renderProductCatalog() {
+  const q=(document.getElementById('prodSearch')?.value||'').toLowerCase();
+  const cf=document.getElementById('prodCatF')?.value||'';
+  const list=SGI_PRODUCTS.filter(p=>{
+    return (!q||p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q))&&(!cf||p.cat===cf);
+  });
+  const ADDON_LABELS={loan_calc:'💰대출계산기',lease_manager:'📋임차계약관리',progress_tracker:'📊진행관리',unit_tracker:'🏠세대관리',checklist:'✅체크리스트'};
+  document.getElementById('productCatalogGrid').innerHTML=list.map(p=>`
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:16px;box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+        <span style="font-size:22px">${p.icon}</span>
+        <div>
+          <div style="font-size:13px;font-weight:700">${p.name}</div>
+          <span style="font-size:10px;background:var(--bg3);color:var(--text3);padding:2px 8px;border-radius:10px;font-weight:700">${p.cat}</span>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5">${p.desc}</p>
+      <div style="margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">필수 서류</div>
+        ${p.docs.map(d=>`<div style="font-size:11px;color:var(--text);padding:3px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px">📄 ${d}</div>`).join('')}
+      </div>
+      ${p.optDocs?.length?`<div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">선택 서류</div>
+        ${p.optDocs.map(d=>`<div style="font-size:11px;color:var(--text3);padding:3px 0;border-bottom:1px solid var(--border)">○ ${d}</div>`).join('')}
+      </div>`:''}
+      ${p.addons.length?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+        ${p.addons.map(a=>`<span style="font-size:10px;background:var(--blue-light);color:var(--blue);padding:2px 8px;border-radius:10px;font-weight:700">${ADDON_LABELS[a]||a}</span>`).join('')}
+      </div>`:''}
+    </div>`).join('');
+}
+
+// ── EXPORT ──
+function exportCSV() {
+  const headers=['접수번호','신청인','연락처','상품명','카테고리','보증금액','접수일','상태','메모'];
+  const rows=apps.map(a=>{
+    const p=SGI_PRODUCTS.find(x=>x.id===a.productId);
+    return [a.id,a.name,a.contact,a.product,p?.cat||'-',a.amount,a.date,a.status,a.memo||''];
+  });
+  const BOM='\uFEFF';
+  const csv=BOM+[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  downloadFile(csv,'sgi_applications_'+todayFmt()+'.csv','text/csv;charset=utf-8');
+  showToast('접수내역 CSV 다운로드를 시작합니다.','success');
+}
+
+function exportJSON() {
+  const data={
+    exportDate:today(), system:'SGI 서울보증보험 대리점 관리시스템',
+    summary:{totalApps:apps.length,totalContracts:contracts.length,
+      pending:apps.filter(a=>a.status==='접수대기').length,
+      activeContracts:contracts.filter(c=>c.status==='활성').length},
+    applications:apps, contracts:contracts,
+    products:SGI_PRODUCTS.map(p=>({id:p.id,name:p.name,cat:p.cat,docs:p.docs,optDocs:p.optDocs,addons:p.addons})),
+  };
+  downloadFile(JSON.stringify(data,null,2),'sgi_data_'+todayFmt()+'.json','application/json');
+  showToast('전체 데이터 JSON 다운로드를 시작합니다.','success');
+}
+
+// ── UTILS ──
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(mo=>{
+  mo.addEventListener('click',function(e){if(e.target===this) this.classList.remove('open');});
+});
+
+function switchTab(btn, panelId) {
+  const wrap=btn.closest('.modal-body, .content');
+  wrap.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  wrap.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const p=document.getElementById(panelId);
+  if (p) p.classList.add('active');
+}
+
+function updateSmsCount(pfx) {
+  const len=(document.getElementById(pfx+'-ta')?.value||'').length;
+  const el=document.getElementById(pfx+'-count');
+  if (el) el.textContent=`${len} / 90자 (${len<=90?'단문':'장문'})`;
+}
+
+function renderPaging(elId, pages, current, cb) {
+  const el=document.getElementById(elId);
+  if (!el) return;
+  if (pages<=1){el.innerHTML='';return;}
+  el.innerHTML=Array.from({length:pages},(_,i)=>`<button class="pg${i+1===current?' active':''}" onclick="(${cb.toString()})(${i+1})">${i+1}</button>`).join('');
+}
+
+// ── INIT ──
+updateSideBadges();
+renderDashboard();
+</script>
+</body>
+</html>
