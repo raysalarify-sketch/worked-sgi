@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -259,6 +259,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
   <div class="sb-section">상품</div>
   <button class="sb-item" onclick="showPage('products',this)"><span class="sb-icon">📦</span>상품 카탈로그</button>
+  <button class="sb-item" onclick="showPage('terms',this)"><span class="sb-icon">📜</span>보험 약관 안내</button>
+
+  <div class="sb-section super-only" style="display:none">최상위 관리</div>
+  <button class="sb-item super-only" style="display:none" onclick="showPage('agencies',this)"><span class="sb-icon">🏢</span>대리점 관리</button>
+  <div class="sb-section agency-only" style="display:none">접수 도구</div>
+  <button class="sb-item agency-only" style="display:none" onclick="openQrModal(sessionStorage.getItem('sgi_admin_id'), sessionStorage.getItem('sgi_admin_name'))"><span class="sb-icon">📱</span>고객용 접수 QR</button>
 
   <div class="sb-section">데이터</div>
   <button class="sb-item" onclick="exportCSV()"><span class="sb-icon">📤</span>CSV 내보내기</button>
@@ -378,7 +384,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
     <!-- ④ 상품 카탈로그 -->
     <div class="page" id="page-products">
-      <div class="page-hd"><div><h2>상품 카탈로그</h2><p>SGI 서울보증보험 전체 취급 상품 — ${SGI_PRODUCTS?.length||0}종</p></div></div>
+      <div class="page-hd"><div><h2>상품 카탈로그</h2><p>SGI 서울보증보험 전체 취급 상품</p></div></div>
       <div class="filter-bar">
         <input type="text" class="fb-input" id="prodSearch" placeholder="상품명 검색..." oninput="renderProductCatalog()">
         <select class="fb-select" id="prodCatF" onchange="renderProductCatalog()">
@@ -386,6 +392,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         </select>
       </div>
       <div id="productCatalogGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+    </div>
+
+    <!-- ⑤ 보험 약관 안내 -->
+    <div class="page" id="page-terms">
+      <div class="page-hd"><div><h2>📜 보험 약관 안내</h2><p>SGI 서울보증보험 상품별 약관 및 접수 시 유의사항을 확인하세요</p></div></div>
+      <div id="termsContent"></div>
     </div>
 
   </div><!-- /content -->
@@ -454,6 +466,7 @@ window.addEventListener('storage', (e) => {
   if (e.key === STORAGE_KEY || e.key === CT_KEY) {
     apps = loadApps();
     contracts = loadContracts();
+    filterMyData();
     updateSideBadges();
     const activePage = document.querySelector('.page.active');
     if (activePage && activePage.id === 'page-applications') renderApps();
@@ -464,6 +477,21 @@ window.addEventListener('storage', (e) => {
 
 let apps      = loadApps();
 let contracts = loadContracts();
+
+// ── MULTI-TENANT FILTER ──
+let myApps = [], myContracts = [];
+function filterMyData() {
+  const role = sessionStorage.getItem('sgi_admin_role') || 'agency';
+  const myId = sessionStorage.getItem('sgi_admin_id') || '';
+  if (role === 'super') {
+    myApps = [...apps];
+    myContracts = [...contracts];
+  } else {
+    myApps = apps.filter(a => !a.agencyId || a.agencyId === myId);
+    myContracts = contracts.filter(c => !c.agencyId || c.agencyId === myId);
+  }
+}
+filterMyData();
 
 const STATUS_MAP_CLS = {
   '접수대기':'b-wait','서류검토':'b-review','승인완료':'b-approved',
@@ -484,13 +512,15 @@ function showPage(name, btn) {
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if (btn) btn.classList.add('active');
-  const titles = {dashboard:'대시보드',applications:'접수 내역 관리',contracts:'계약 관리',products:'상품 카탈로그'};
-  const subs   = {dashboard:'전체 현황',applications:'신청 조회 및 상태관리',contracts:'계약 만기·갱신 관리',products:'전체 상품 목록'};
+  const titles = {dashboard:'대시보드',applications:'접수 내역 관리',contracts:'계약 관리',products:'상품 카탈로그',terms:'보험 약관 안내',agencies:'대리점 관리'};
+  const subs   = {dashboard:'전체 현황',applications:'신청 조회 및 상태관리',contracts:'계약 만기·갱신 관리',products:'전체 상품 목록',terms:'상품별 약관 및 유의사항',agencies:'등록 대리점 계정 관리'};
   document.getElementById('pageTitle').innerHTML=`${titles[name]||''} <span>${subs[name]||''}</span>`;
   if (name==='dashboard')    renderDashboard();
   if (name==='applications') { fillAppFilters(); renderApps(); }
   if (name==='contracts')    { fillCtFilters(); renderContracts(); renderContractAlerts(); }
   if (name==='products')     { fillProductFilters(); renderProductCatalog(); }
+  if (name==='terms')        renderTermsPage();
+  if (name==='agencies')     renderAgencies();
 }
 
 function refreshData() {
@@ -1167,10 +1197,115 @@ function doLogin() {
 function initMenu() {
   const role = sessionStorage.getItem('sgi_admin_role');
   const name = sessionStorage.getItem('sgi_admin_name') || 'Admin';
-  document.querySelector('.sb-sub').textContent = name + ' Dashboard';
+  document.querySelector('.sb-sub').textContent = name + ' (' + (role === 'super' ? '최상위관리자' : '대리점') + ')';
   if(role === 'super') {
     document.querySelectorAll('.super-only').forEach(e => e.style.display = '');
+  } else {
+    document.querySelectorAll('.agency-only').forEach(e => e.style.display = '');
   }
+}
+
+// ── TERMS PAGE ──
+const SGI_TERMS = [
+  {
+    cat: '일반계약/공사', icon: '🏗️',
+    items: [
+      { name: '입찰보증보험', code: 'SGI-GC-01', summary: '입찰에 참가한 자가 낙찰 후 계약을 체결하지 아니한 경우 발주자에게 발생한 손해를 보전하는 보증보험입니다.', points: ['입찰보증금 납부 대신 활용', '낙찰 후 계약 미체결 시 보험금 지급', '발급일 기준 입찰마감일까지 유효'], docs: ['사업자등록증', '입찰참가자격서류', '납세증명서'] },
+      { name: '계약보증보험', code: 'SGI-GC-02', summary: '계약자가 계약 내용을 이행하지 아니한 경우 발주자에게 발생한 손해를 보전합니다.', points: ['공사·용역·물품계약에 활용', '계약금액의 10~20% 보증', '계약기간 전체 유효'], docs: ['사업자등록증', '계약서', '납세증명서'] },
+      { name: '하자보증보험', code: 'SGI-GC-03', summary: '공사 완료 후 하자 발생 시 발주자에 대한 하자보수 이행을 보증합니다.', points: ['준공 후 하자담보기간 전체 유효', '건설업은 1~5년 하자담보기간 적용', '하자보수보증금 대체 가능'], docs: ['사업자등록증', '준공확인서', '하자담보책임각서', '납세증명서'] },
+      { name: '공사이행보증보험', code: 'SGI-GC-08', summary: '도급인이 수급인의 계약 내용 불이행에 대비해 가입하는 보증보험입니다.', points: ['계약금액의 40% 이상 보증', '공사기간 내내 유효', '부도·폐업 등 불이행 시 대위시공'], docs: ['사업자등록증', '도급계약서', '납세증명서', '재무제표(최근2년)'] },
+    ]
+  },
+  {
+    cat: '주택/전세/임대', icon: '🏠',
+    items: [
+      { name: '전세금반환보증보험', code: 'SGI-HO-03', summary: '임대차 계약 종료 후 임대인이 전세금을 반환하지 않을 경우 임차인에게 보험금을 지급합니다.', points: ['임차인 직접 가입 가능', '보증금 최대 7억원(수도권 기준)', '임대차 계약기간 종료일까지 유효', '전세계약서·확정일자 필수'], docs: ['임대차계약서', '전입신고확인서', '건물등기부등본', '임대인사업자등록증(해당 시)'] },
+      { name: '전세금보장신용보험', code: 'SGI-HO-02', summary: '임대인의 채무불이행으로 전세금을 반환받지 못하는 경우를 대비합니다.', points: ['HUG 전세보증과 별도 상품', '보증료율 연 0.128~0.154%', '방공제 계산 필수 확인'], docs: ['임대차계약서', '전입신고확인서', '건물등기부등본', '임차인신분증'] },
+      { name: '임대주택보증보험', code: 'SGI-HO-04', summary: '임대사업자가 임대차 계약 종료 후 보증금 반환 의무를 이행하지 못하는 경우 보증합니다.', points: ['임대사업자 의무 가입 대상', '임대의무기간 동안 유지 필수', '매년 갱신 필요'], docs: ['사업자등록증(임대)', '건물등기부등본', '임대차계약서', '임대사업자등록증'] },
+    ]
+  },
+  {
+    cat: '관공서/공공기관/금융', icon: '🏛️',
+    items: [
+      { name: '납세보증보험', code: 'SGI-PA-06', summary: '세금 납부의 유예·분납을 위해 납세담보로 제출하는 보증보험입니다.', points: ['관할 세무서에 납세담보로 제출', '체납세액의 110% 이상 보증', '납부기한까지 유효'], docs: ['사업자등록증', '세금납부고지서', '납세증명서'] },
+      { name: '지급신용보험(카드가맹점)', code: 'SGI-TC-01', summary: 'VAN사 또는 카드사가 카드가맹점의 채무불이행에 대비해 가입하는 보험입니다.', points: ['카드가맹계약 체결 시 필요', '매출채권 미지급 위험 보전', '가맹점 신용도에 따라 보증료 변동'], docs: ['사업자등록증', '카드가맹계약서', '매출자료'] },
+    ]
+  },
+  {
+    cat: '유통/물류/유통', icon: '📦',
+    items: [
+      { name: '물품납품보증보험', code: 'SGI-RT-01', summary: '납품업체의 물품 납기 미이행에 대비해 발주처가 가입하는 보험입니다.', points: ['납품금액의 10~20% 보증', '납품기한까지 유효', '분할납품계약도 가능'], docs: ['사업자등록증', '물품공급계약서', '납품계산서'] },
+    ]
+  },
+];
+
+const SGI_NOTES = [
+  { icon: '📋', title: '접수 전 공통 준비사항', content: '모든 보증보험 신청 시 ① 사업자등록증(개인: 신분증), ② 최근 3개월 이내 발급된 납세증명서, ③ 해당 계약서 원본이 기본으로 필요합니다.' },
+  { icon: '⏱️', title: '처리 소요 기간', content: '일반보증: 접수 후 1~2 영업일 / 전세금보증: 3~5 영업일 / 대형공사(50억 이상): 5~7 영업일 / 서류 미비 시 추가 소요될 수 있습니다.' },
+  { icon: '💰', title: '보증료 계산 방법', content: '보증료 = 보증금액 × 보증료율 × (보증기간/365). 보증료율은 신청인의 신용등급, 거래실적, 상품유형에 따라 차등 적용됩니다. 법인의 경우 최근 2개년 재무제표 제출 시 우대 가능합니다.' },
+  { icon: '⚠️', title: '서류 유의사항', content: '① 모든 서류는 발급일 기준 3개월 이내 유효, ② 법인인감이 필요한 서류는 인감증명서 첨부 필수, ③ 외국법인은 별도 공증 서류 요구, ④ 접수 후 서류 추가 요청 시 5영업일 내 미제출 시 자동 반려.' },
+  { icon: '📞', title: 'SGI 서울보증 고객센터', content: '대표번호: 1670-7000 / 보증업무: 1670-7000 (내선 1번) / 보험금청구: 1670-7000 (내선 2번) / 전산민원: 1670-7000 (내선 3번) / 운영시간: 평일 09:00~18:00 (점심 12:00~13:00 제외)' },
+  { icon: '🌐', title: 'SGI 서울보증 약관 원문 확인', content: 'SGI 서울보증보험 홈페이지(www.sgic.co.kr) → 상품안내 → 각 상품별 약관 다운로드 가능. 보증보험표준약관 제13조(면책사유) 및 제16조(보험금 청구) 반드시 숙지.' },
+];
+
+function renderTermsPage() {
+  const el = document.getElementById('termsContent');
+  if (!el) return;
+  
+  const notesHtml = SGI_NOTES.map(n => `
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-body" style="padding:16px 20px;">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <span style="font-size:24px;flex-shrink:0;">${n.icon}</span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">${n.title}</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;">${n.content}</div>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  const termsHtml = SGI_TERMS.map(cat => `
+    <div style="margin-bottom:28px;">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--blue);display:flex;align-items:center;gap:8px;">${cat.icon} ${cat.cat}</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;">
+        ${cat.items.map(item => `
+          <div class="card" style="cursor:pointer;" onclick="this.querySelector('.term-detail').style.display=this.querySelector('.term-detail').style.display==='none'?'block':'none'">
+            <div class="card-body" style="padding:16px 20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-size:14px;font-weight:700;">${item.name}</div>
+                <span style="font-size:10px;color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:10px;">${item.code}</span>
+              </div>
+              <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">${item.summary}</div>
+              <div class="term-detail" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;">
+                <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px;">📌 주요 특약·유의사항</div>
+                <ul style="margin:0;padding-left:16px;font-size:12px;color:var(--text2);line-height:1.8;">
+                  ${item.points.map(p => `<li>${p}</li>`).join('')}
+                </ul>
+                <div style="font-size:12px;font-weight:700;color:var(--text3);margin:10px 0 6px;">📎 기본 제출 서류</div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                  ${item.docs.map(d => `<span style="font-size:11px;padding:2px 8px;background:var(--blue-light);color:var(--blue);border-radius:10px;border:1px solid var(--blue2);">${d}</span>`).join('')}
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:8px;">▼ 클릭하여 상세보기</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+      ${notesHtml}
+    </div>
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;border-bottom:2px solid var(--border);padding-bottom:10px;">📑 상품별 약관 요약 (클릭 시 상세 확인)</h3>
+    ${termsHtml}
+    <div class="card" style="background:linear-gradient(135deg,var(--blue-pale),var(--blue-light));border:1px solid var(--blue2);">
+      <div class="card-body" style="padding:16px 20px;text-align:center;">
+        <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:6px;">📘 SGI 서울보증보험 공식 약관 원문</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">각 상품의 전체 약관 원문은 SGI 서울보증보험 홈페이지에서 확인하실 수 있습니다.</div>
+        <a href="https://www.sgic.co.kr" target="_blank" style="display:inline-block;padding:10px 24px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:13px;font-weight:700;text-decoration:none;">🌐 www.sgic.co.kr 바로가기</a>
+      </div>
+    </div>`;
 }
 
 // ── QR CODE GENERATOR ──
