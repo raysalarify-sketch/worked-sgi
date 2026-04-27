@@ -220,9 +220,26 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text);font-family:inherit}
 .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--blue2)}
 .form-group textarea{resize:none;line-height:1.5}
+/* LOGIN OVERLAY */
+#loginOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;padding:40px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.08);width:400px;max-width:90%;text-align:center}
+.login-box h2{margin-bottom:8px;color:var(--text);font-size:24px;letter-spacing:-0.5px}
+.login-box p{margin-bottom:24px;color:var(--text3);font-size:14px}
+.login-box input{width:100%;padding:14px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;font-size:14px;box-sizing:border-box}
+.login-box button{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;margin-top:10px}
 </style>
 </head>
 <body>
+<div id="loginOverlay">
+  <div class="login-box">
+    <div style="font-size:42px;margin-bottom:16px">🔒</div>
+    <h2>대리점 관리자 로그인</h2>
+    <p>대리점 관계자만 접근할 수 있습니다.</p>
+    <input type="text" id="agName" placeholder="대리점명 (예: 중앙대리점)" />
+    <input type="password" id="agPw" placeholder="비밀번호 (sgi1234)" onkeyup="if(event.key==='Enter')doLogin()" />
+    <button onclick="doLogin()">보안 접속하기</button>
+  </div>
+</div>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -1067,7 +1084,29 @@ function renderPaging(elId, pages, current, cb) {
   el.innerHTML=Array.from({length:pages},(_,i)=>`<button class="pg${i+1===current?' active':''}" onclick="(${cb.toString()})(${i+1})">${i+1}</button>`).join('');
 }
 
+// ════════════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════════════
+function doLogin() {
+  const aname = document.getElementById('agName').value.trim();
+  const apw = document.getElementById('agPw').value.trim();
+  if(!aname) { showToast('대리점명을 입력해주세요.','warn'); return; }
+  if(!apw) { showToast('비밀번호를 입력해주세요.','warn'); return; }
+  
+  if(apw === 'sgi1234') {
+    sessionStorage.setItem('sgi_admin_logged', 'true');
+    sessionStorage.setItem('sgi_admin_name', aname);
+    document.getElementById('loginOverlay').style.display = 'none';
+    showToast(aname + ' 관리자님 환영합니다.','success');
+  } else {
+    showToast('비밀번호가 일치하지 않습니다.','error');
+  }
+}
+
 // ── INIT ──
+if(sessionStorage.getItem('sgi_admin_logged')==='true') {
+  document.getElementById('loginOverlay').style.display='none';
+}
 updateSideBadges();
 renderDashboard();
 </script>
