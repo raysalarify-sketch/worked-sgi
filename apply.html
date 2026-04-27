@@ -188,6 +188,23 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .toast.info{border-left:4px solid var(--blue);color:var(--blue)}
 .toast.warn{border-left:4px solid var(--amber);color:var(--amber)}
 
+
+/* ── TOOLS PANEL ── */
+.tools-panel{display:none}
+@media(min-width:768px){
+  .tools-panel{display:block;width:260px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);padding:20px;overflow-y:auto;height:100vh;position:sticky;top:0;}
+  .main{max-width:none;flex:1;padding:28px;}
+}
+.tool-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rlg);margin-bottom:14px;overflow:hidden}
+.tool-head{padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.tool-body{padding:14px;display:none}
+.tool-body.open{display:block}
+.tool-inp{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;margin-bottom:8px;font-family:inherit;background:#fff}
+.tool-label{font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px;display:block}
+.tool-btn{width:100%;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
+.tool-result{background:var(--blue-light);border:1px solid #C2D8F0;border-radius:var(--r);padding:10px;font-size:12px;margin-top:10px;display:none}
+.lease-item{padding:9px 10px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;background:#fff;font-size:12px}
+.lease-item-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 @media(max-width:700px){
   .hero-inner{flex-direction:column;align-items:flex-start;gap:12px}
   .products-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
@@ -412,6 +429,72 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 
 </div><!-- /main -->
+
+<!-- ── 우측 사이드바 도구 패널 ── -->
+<div class="tools-panel">
+  <div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">🛠 도구 패널</div>
+
+  <!-- 대출 계산기 -->
+  <div class="tool-card">
+    <div class="tool-head" onclick="toggleTool('calc')">
+      <span>💰 대출 계산기</span><span id="calc-arr">▼</span>
+    </div>
+    <div class="tool-body" id="tool-calc">
+      <label class="tool-label">대출금액 (만원)</label>
+      <input class="tool-inp" type="number" id="tc-principal" placeholder="예: 30000">
+      <label class="tool-label">연 금리 (%)</label>
+      <input class="tool-inp" type="number" step="0.01" id="tc-rate" placeholder="예: 4.5">
+      <label class="tool-label">상환기간 (개월)</label>
+      <input class="tool-inp" type="number" id="tc-months" placeholder="예: 24">
+      <label class="tool-label">상환 방식</label>
+      <select class="tool-inp" id="tc-type">
+        <option value="equal">원리금균등상환</option>
+        <option value="principal">원금균등상환</option>
+        <option value="bullet">만기일시상환</option>
+      </select>
+      <button class="tool-btn" onclick="calcLoan()">계산하기</button>
+      <div class="tool-result" id="calc-result"></div>
+    </div>
+  </div>
+
+  <!-- 임차계약 관리 -->
+  <div class="tool-card">
+    <div class="tool-head" onclick="toggleTool('lease')">
+      <span>🏠 임차계약 관리</span><span id="lease-arr">▼</span>
+    </div>
+    <div class="tool-body" id="tool-lease">
+      <label class="tool-label">임차인</label>
+      <input class="tool-inp" type="text" id="tl-tenant" placeholder="임차인명">
+      <label class="tool-label">임대인</label>
+      <input class="tool-inp" type="text" id="tl-landlord" placeholder="임대인명">
+      <label class="tool-label">보증금 (만원)</label>
+      <input class="tool-inp" type="number" id="tl-deposit" placeholder="예: 20000">
+      <label class="tool-label">계약만료일</label>
+      <input class="tool-inp" type="date" id="tl-expiry">
+      <label class="tool-label">주소</label>
+      <input class="tool-inp" type="text" id="tl-addr" placeholder="건물 주소">
+      <button class="tool-btn" onclick="addLease()">등록</button>
+      <div id="lease-list" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- 보증료 계산 -->
+  <div class="tool-card">
+    <div class="tool-head" onclick="toggleTool('premium')">
+      <span>📊 보증료 계산</span><span id="premium-arr">▼</span>
+    </div>
+    <div class="tool-body" id="tool-premium">
+      <label class="tool-label">보증금액 (만원)</label>
+      <input class="tool-inp" type="number" id="tp-amount" placeholder="예: 50000">
+      <label class="tool-label">보증료율 (%)</label>
+      <input class="tool-inp" type="number" step="0.001" id="tp-rate" placeholder="예: 0.154">
+      <label class="tool-label">보증기간 (일)</label>
+      <input class="tool-inp" type="number" id="tp-days" placeholder="예: 365">
+      <button class="tool-btn" onclick="calcPremium()">계산하기</button>
+      <div class="tool-result" id="premium-result"></div>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -967,18 +1050,6 @@ function searchStatus() {
                 ${i<STATUS_STEPS.length-1?'<div class="tl-line"></div>':''}
                 <div class="tl-dot ${i<curStep?'done':i===curStep?'active':'pending'}">${i<curStep?'✓':STATUS_ICON[step]||'○'}</div>
                 <div class="tl-content">
-                  <h4 style="color:${i===curStep?'var(--blue)':i<curStep?'var(--green)':'var(--text3)'}">${step}</h4>
-                  <p>${i<curStep?'완료':i===curStep?'현재 처리 중':'대기 중'}</p>
-                </div>
-              </div>`).join('')}
-          </div>`}
-        ${a.memo && !isRejected ? `<div style="background:var(--bg3);border-radius:var(--r);padding:10px 12px;margin-top:12px;font-size:12px;color:var(--text2)">📌 ${a.memo}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── INIT ──
 renderCats();
 renderProducts();
 const curAgency = agencies.find(a => a.id === currentAgencyId);
@@ -1067,8 +1138,174 @@ document.querySelectorAll('.modal-overlay').forEach(mo=>{
   mo.addEventListener('click',function(e){if(e.target===this) this.classList.remove('open');});
 });
 </script>
+
+<div id="agencySelectOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0C3B7A,#1356A2);z-index:99999;overflow-y:auto;">
+  <div style="max-width:560px;margin:60px auto;padding:0 20px;">
+    <div style="text-align:center;color:#fff;margin-bottom:40px;">
+      <div style="font-size:36px;margin-bottom:12px;">🏦</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;opacity:.7;margin-bottom:8px;">SGI SEOUL GUARANTEE</div>
+      <h1 style="font-size:26px;font-weight:900;margin-bottom:8px;">서울보증보험 온라인 접수</h1>
+      <p style="font-size:14px;opacity:.75;">접속할 대리점을 선택해주세요</p>
+    </div>
+    <div id="agencySelectList" style="display:grid;gap:12px;"></div>
+    <p style="color:rgba(255,255,255,.5);font-size:12px;text-align:center;margin-top:24px;">대리점 전용 링크(QR)로 접속하면 이 화면을 건너뜁니다</p>
+  </div>
+</div>
 </body>
+<script>
+// ── 대리점 선택 오버레이 ──
+(function initAgencySelect() {
+  const params = new URLSearchParams(window.location.search);
+  const agId = params.get('agency');
+  if (agId) return; // QR/링크로 직접 접속 시 스킵
+
+  // 대리점 목록 렌더링
+  const overlay = document.getElementById('agencySelectOverlay');
+  const listEl  = document.getElementById('agencySelectList');
+  if (!overlay || !listEl) return;
+
+  const agList = agencies.filter(a => a.role !== 'super');
+  if (agList.length === 0) return;
+
+  listEl.innerHTML = agList.map(ag => `
+    <div onclick="selectAgency('${ag.id}')" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:20px 24px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px;" onmouseover="this.style.background='rgba(255,255,255,.22)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
+      <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🏢</div>
+      <div>
+        <div style="color:#fff;font-size:16px;font-weight:700;margin-bottom:4px">${ag.name}</div>
+        <div style="color:rgba(255,255,255,.65);font-size:13px">클릭하여 이 대리점으로 접속하기 →</div>
+      </div>
+    </div>`).join('');
+
+  overlay.style.display = 'block';
+})();
+
+function selectAgency(agId) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('agency', agId);
+  window.location.href = url.toString();
+}
+
+// ── 접수내역 삭제 ──
+function deleteApp(id) {
+  if (!confirm('접수 내역을 삭제하시겠습니까?')) return;
+  let apps2 = loadApps();
+  apps2 = apps2.filter(a => a.id !== id);
+  saveApps(apps2);
+  searchStatus();
+  showToast('접수 내역이 삭제되었습니다.', 'info');
+}
+
+// ── 도구 패널 토글 ──
+function toggleTool(key) {
+  const body = document.getElementById('tool-' + key);
+  const arr  = document.getElementById(key + '-arr');
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  if (arr) arr.textContent = isOpen ? '▼' : '▲';
+}
+
+// ── 대출 계산기 ──
+function calcLoan() {
+  const P = parseFloat(document.getElementById('tc-principal').value) * 10000;
+  const r = parseFloat(document.getElementById('tc-rate').value) / 100 / 12;
+  const n = parseInt(document.getElementById('tc-months').value);
+  const t = document.getElementById('tc-type').value;
+  const res = document.getElementById('calc-result');
+  if (!P || !r || !n) { showToast('모든 항목을 입력해주세요', 'warn'); return; }
+
+  let monthly, totalInterest;
+  if (t === 'bullet') {
+    monthly = P * r;
+    totalInterest = monthly * n;
+  } else if (t === 'equal') {
+    monthly = P * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+    totalInterest = monthly * n - P;
+  } else {
+    const pPrincipal = P / n;
+    monthly = pPrincipal + P * r;
+    totalInterest = r * P * (n+1) / 2;
+  }
+
+  res.style.display = 'block';
+  res.innerHTML = `
+    <div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px">월 상환액 (첫 달)</div>
+    <div style="font-size:20px;font-weight:900;color:var(--blue);margin-bottom:10px">${Math.round(monthly).toLocaleString()}원</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+      <div><div style="color:var(--text3)">대출금액</div><div style="font-weight:700">${(P/10000).toLocaleString()}만원</div></div>
+      <div><div style="color:var(--text3)">총 이자</div><div style="font-weight:700;color:var(--red)">${Math.round(totalInterest/10000).toLocaleString()}만원</div></div>
+      <div><div style="color:var(--text3)">상환기간</div><div style="font-weight:700">${n}개월</div></div>
+      <div><div style="color:var(--text3)">총 상환액</div><div style="font-weight:700">${Math.round((P+totalInterest)/10000).toLocaleString()}만원</div></div>
+    </div>`;
+}
+
+// ── 보증료 계산 ──
+function calcPremium() {
+  const amt  = parseFloat(document.getElementById('tp-amount').value) * 10000;
+  const rate = parseFloat(document.getElementById('tp-rate').value) / 100;
+  const days = parseInt(document.getElementById('tp-days').value);
+  const res  = document.getElementById('premium-result');
+  if (!amt || !rate || !days) { showToast('모든 항목을 입력해주세요', 'warn'); return; }
+  const premium = amt * rate * (days / 365);
+  res.style.display = 'block';
+  res.innerHTML = `
+    <div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px">납부 보증료</div>
+    <div style="font-size:20px;font-weight:900;color:var(--blue)">${Math.round(premium).toLocaleString()}원</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px">${(amt/10000).toLocaleString()}만원 × ${(rate*100).toFixed(3)}% × ${days}일/365</div>`;
+}
+
+// ── 임차계약 관리 ──
+const leaseKey = 'sgi_tool_leases';
+function loadLeases() { try { return JSON.parse(localStorage.getItem(leaseKey)||'[]'); } catch { return []; } }
+function saveLeases(a) { localStorage.setItem(leaseKey, JSON.stringify(a)); }
+
+function addLease() {
+  const tenant   = document.getElementById('tl-tenant').value.trim();
+  const landlord = document.getElementById('tl-landlord').value.trim();
+  const deposit  = document.getElementById('tl-deposit').value;
+  const expiry   = document.getElementById('tl-expiry').value;
+  const addr     = document.getElementById('tl-addr').value.trim();
+  if (!tenant || !expiry) { showToast('임차인과 만료일은 필수입니다', 'warn'); return; }
+  const leases = loadLeases();
+  leases.push({ id: Date.now(), tenant, landlord, deposit, expiry, addr });
+  saveLeases(leases);
+  ['tl-tenant','tl-landlord','tl-deposit','tl-expiry','tl-addr'].forEach(id => document.getElementById(id).value = '');
+  renderLeases();
+  showToast('임차계약이 등록되었습니다', 'success');
+}
+
+function deleteLease(id) {
+  let leases = loadLeases().filter(l => l.id !== id);
+  saveLeases(leases);
+  renderLeases();
+}
+
+function renderLeases() {
+  const el = document.getElementById('lease-list');
+  if (!el) return;
+  const leases = loadLeases();
+  if (!leases.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px">등록된 계약 없음</div>'; return; }
+  el.innerHTML = leases.map(l => {
+    const diff = Math.round((new Date(l.expiry) - new Date()) / 86400000);
+    const cls  = diff < 0 ? 'dday-past' : diff <= 30 ? 'dday-danger' : diff <= 90 ? 'dday-warn' : 'dday-ok';
+    const dtxt = diff < 0 ? '만기' : `D-${diff}`;
+    return `<div class="lease-item">
+      <div class="lease-item-top">
+        <span style="font-weight:700">${l.tenant}</span>
+        <span class="dday-chip ${cls}">${dtxt}</span>
+      </div>
+      <div style="color:var(--text3);margin-bottom:4px">${l.expiry} 만료 · ${l.deposit ? (l.deposit/1).toLocaleString()+'만원' : '-'}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--text3)">${l.addr||'-'}</span>
+        <button onclick="deleteLease(${l.id})" style="font-size:11px;padding:2px 8px;border:1px solid var(--red-light);background:var(--red-light);color:var(--red);border-radius:4px;cursor:pointer;font-family:inherit">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+renderLeases();
+</script>
 </html>
+
 
 
 
