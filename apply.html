@@ -770,6 +770,8 @@ function submitForm() {
     });
   }
 
+    const urlParams2 = new URLSearchParams(window.location.search);
+  const currentAgencyId = urlParams2.get('agency') || 'ag01';
   const newId = 'A'+new Date().getFullYear()+'-'+String(apps.length+50).padStart(4,'0');
   const app = {
     id:newId, name, contact,
@@ -937,10 +939,12 @@ function submitConsult() {
   if(!contact) { showToast('연락처를 입력해주세요','warn'); return; }
   
   const p = SGI_PRODUCTS.find(x => x.id===selectedProductId) || {id:'', name:'기타'};
+    const urlParams2 = new URLSearchParams(window.location.search);
+  const currentAgencyId = urlParams2.get('agency') || 'ag01';
   const newId = 'C'+new Date().getFullYear()+'-'+String(apps.length+50).padStart(4,'0');
   
   const app = {
-    id: newId, name, contact, email,
+    id: newId, agencyId: currentAgencyId, name, contact, email,
     productId: p.id, product: '[상담요청] ' + p.name,
     amount: 0, period: '', date: today(), status: '상담요청',
     docs: {}, memo, leaseReqs: [], fieldsData: {}
@@ -966,6 +970,7 @@ document.querySelectorAll('.modal-overlay').forEach(mo=>{
 </script>
 </body>
 </html>
+
 
 
 

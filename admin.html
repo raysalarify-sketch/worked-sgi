@@ -235,7 +235,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div style="font-size:42px;margin-bottom:16px">🔒</div>
     <h2>대리점 관리자 로그인</h2>
     <p>대리점 관계자만 접근할 수 있습니다.</p>
-    <input type="text" id="agName" placeholder="대리점명 (예: 중앙대리점)" />
+    <input type="text" id="agId" placeholder="아이디 (예: ag01, master)" />
     <input type="password" id="agPw" placeholder="비밀번호 (sgi1234)" onkeyup="if(event.key==='Enter')doLogin()" />
     <button onclick="doLogin()">보안 접속하기</button>
   </div>
@@ -478,24 +478,24 @@ function showPage(name, btn) {
 }
 
 function refreshData() {
-  apps=loadApps(); contracts=loadContracts();
+  apps=loadApps(); contracts=loadContracts(); filterMyData();
   updateSideBadges();
   showToast('데이터가 새로고침되었습니다.','info');
 }
 
 // ── SIDEBAR BADGES ──
 function updateSideBadges() {
-  document.getElementById('sb-pending').textContent = apps.filter(a=>a.status==='접수대기').length;
-  const exp = contracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';}).length;
+  document.getElementById('sb-pending').textContent = myApps.filter(a=>a.status==='접수대기').length;
+  const exp = myContracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';}).length;
   document.getElementById('sb-expiry').textContent = exp;
 }
 
 // ── DASHBOARD ──
 function renderDashboard() {
-  const total=apps.length, wait=apps.filter(a=>a.status==='접수대기').length;
-  const rev=apps.filter(a=>a.status==='서류검토').length, appr=apps.filter(a=>a.status==='승인완료').length;
-  const iss=apps.filter(a=>a.status==='증권발행').length;
-  const ctActive=contracts.filter(c=>c.status==='활성'||c.status==='연장').length;
+  const total=myApps.length, wait=myApps.filter(a=>a.status==='접수대기').length;
+  const rev=myApps.filter(a=>a.status==='서류검토').length, appr=myApps.filter(a=>a.status==='승인완료').length;
+  const iss=myApps.filter(a=>a.status==='증권발행').length;
+  const ctActive=myContracts.filter(c=>c.status==='활성'||c.status==='연장').length;
 
   document.getElementById('dashStats').innerHTML=`
     <div class="stat-card"><div class="sc-label">전체 접수</div><div class="sc-val">${total}</div><div class="sc-sub">누적 접수건수</div><div class="sc-bar"><div class="sc-bar-fill" style="width:100%"></div></div></div>
@@ -506,7 +506,7 @@ function renderDashboard() {
   `;
 
   // 만기 임박 알림
-  const expiring=contracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';});
+  const expiring=myContracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';});
   document.getElementById('expiryAlerts').innerHTML=expiring.map(c=>`
     <div class="alert-banner">⚠️ <strong>${c.name}</strong> — ${c.product} 계약이 <strong>${calcDday(c.endDate)}일</strong> 후 만기됩니다 (${c.endDate})</div>`).join('');
 
@@ -516,7 +516,7 @@ function renderDashboard() {
     {k:'서류검토',v:rev,c:'var(--blue)'},
     {k:'승인완료',v:appr,c:'#2E6611'},
     {k:'증권발행',v:iss,c:'var(--teal)'},
-    {k:'반려',v:apps.filter(a=>a.status==='반려').length,c:'var(--red)'},
+    {k:'반려',v:myApps.filter(a=>a.status==='반려').length,c:'var(--red)'},
   ];
   const maxS=Math.max(...statusData.map(d=>d.v),1);
   document.getElementById('statusChart').innerHTML=statusData.map(d=>`
@@ -528,7 +528,7 @@ function renderDashboard() {
 
   // 카테고리별 차트
   const catCounts={};
-  apps.forEach(a=>{
+  myApps.forEach(a=>{
     const p=SGI_PRODUCTS.find(x=>x.id===a.productId);
     const cat=p?.cat||a.product;
     catCounts[cat]=(catCounts[cat]||0)+1;
@@ -542,7 +542,7 @@ function renderDashboard() {
     </div>`).join('');
 
   // 최근 접수
-  document.getElementById('recentApps').innerHTML=apps.slice(0,6).map(a=>`
+  document.getElementById('recentApps').innerHTML=myApps.slice(0,6).map(a=>`
     <div class="recent-item">
       <div style="flex:1;min-width:0">
         <strong style="font-size:13px">${a.name}</strong>
@@ -561,7 +561,7 @@ function fillAppFilters() {
   const cats=[...new Set(SGI_PRODUCTS.map(p=>p.cat))];
   const catEl=document.getElementById('appCatF');
   catEl.innerHTML='<option value="">전체 카테고리</option>'+cats.map(c=>`<option>${c}</option>`).join('');
-  const prods=[...new Set(apps.map(a=>a.product))];
+  const prods=[...new Set(myApps.map(a=>a.product))];
   const prodEl=document.getElementById('appProductF');
   prodEl.innerHTML='<option value="">전체 상품</option>'+prods.map(p=>`<option>${p}</option>`).join('');
 }
@@ -571,7 +571,7 @@ function renderApps() {
   const sf=document.getElementById('appStatusF')?.value||'';
   const cf=document.getElementById('appCatF')?.value||'';
   const pf=document.getElementById('appProductF')?.value||'';
-  let filtered=apps.filter(a=>{
+  let filtered=myApps.filter(a=>{
     const prodObj=SGI_PRODUCTS.find(x=>x.id===a.productId);
     const ms=!q||(a.id+a.name+a.product+a.contact).toLowerCase().includes(q);
     const mst=!sf||a.status===sf;
@@ -710,7 +710,7 @@ function sendAppSms(id) {
 
 // ── CONTRACTS ──
 function fillCtFilters() {
-  const prods=[...new Set(contracts.map(c=>c.product))];
+  const prods=[...new Set(myContracts.map(c=>c.product))];
   const el=document.getElementById('ctProductF');
   el.innerHTML='<option value="">전체 상품</option>'+prods.map(p=>`<option>${p}</option>`).join('');
 }
@@ -719,7 +719,7 @@ function renderContracts() {
   const q=(document.getElementById('ctSearch')?.value||'').toLowerCase();
   const sf=document.getElementById('ctStatusF')?.value||'';
   const pf=document.getElementById('ctProductF')?.value||'';
-  let filtered=contracts.filter(c=>{
+  let filtered=myContracts.filter(c=>{
     const ms=!q||(c.id+c.name+c.product).toLowerCase().includes(q);
     return ms&&(!sf||c.status===sf)&&(!pf||c.product===pf);
   });
@@ -744,7 +744,7 @@ function renderContracts() {
 }
 
 function renderContractAlerts() {
-  const exp=contracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';});
+  const exp=myContracts.filter(c=>{const d=calcDday(c.endDate);return d>=0&&d<=30&&c.status!=='해지';});
   document.getElementById('contractAlerts').innerHTML=exp.map(c=>`
     <div class="alert-banner">⚠️ <strong>${c.name}</strong> — ${c.product} 계약이 <strong>${calcDday(c.endDate)}일</strong> 후 만기됩니다 (${c.endDate})
       <button class="btn btn-xs" style="margin-left:auto;background:var(--amber-light);border:1px solid #FAC775;color:var(--amber);font-family:inherit;cursor:pointer" onclick="openCtModal('${c.id}')">확인</button>
@@ -976,7 +976,7 @@ function openNewContract() {
 function addNewContract() {
   const name=document.getElementById('nc-name')?.value?.trim()||'';
   if (!name){showToast('계약자명을 입력해주세요','warn');return;}
-  const newId='C'+new Date().getFullYear()+'-'+String(contracts.length+10).padStart(3,'0');
+  const newId='C'+new Date().getFullYear()+'-'+String(myContracts.length+10).padStart(3,'0');
   contracts.unshift({
     id:newId, appId:null, name, contact:document.getElementById('nc-contact')?.value||'',
     product:document.getElementById('nc-product')?.value||SGI_PRODUCTS[0].name,
@@ -1029,10 +1029,48 @@ function renderProductCatalog() {
     </div>`).join('');
 }
 
+// ── AGENCIES MANAGEMENT ──
+function renderAgencies() {
+  document.getElementById('agenciesTbody').innerHTML = agencies.map(ag => {
+    const agApps = apps.filter(a => a.agencyId === ag.id).length;
+    const agCts = contracts.filter(c => c.agencyId === ag.id).length;
+    return <tr>
+      <td style="padding:12px; border-bottom:1px solid #eee;"><strong>+ag.id+</strong></td>
+      <td style="padding:12px; border-bottom:1px solid #eee;">+ag.name+</td>
+      <td style="padding:12px; border-bottom:1px solid #eee;">+ag.pw+</td>
+      <td style="padding:12px; border-bottom:1px solid #eee;"><span class="badge +(ag.role==='super'?'b-wait':'')+">+(ag.role==='super'?'최상위':'대리점')+</span></td>
+      <td style="padding:12px; border-bottom:1px solid #eee;">+(ag.role==='super'?'-':agApps+건)+</td>
+      <td style="padding:12px; border-bottom:1px solid #eee;">+(ag.role==='super'?'-':agCts+건)+</td>
+      <td style="padding:12px; border-bottom:1px solid #eee;">
+        +(ag.role!=='super'?<button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5" onclick="deleteAgency('+ag.id+')">삭제</button>:'-')+
+      </td>
+    </tr>;
+  }).join('');
+}
+function openNewAgency() {
+  const nid = 'ag' + String(agencies.length).padStart(2, '0');
+  const n = prompt('새로 등록할 대리점명을 입력하세요:', '신규대리점');
+  if(!n) return;
+  const pw = prompt('사용할 비밀번호를 입력하세요:', 'sgi1234');
+  if(!pw) return;
+  
+  agencies.push({ id: nid, name: n, pw: pw, role: 'agency' });
+  saveAgencies(agencies);
+  renderAgencies();
+  showToast(n + ' 대리점이 발급되었습니다.', 'success');
+}
+function deleteAgency(id) {
+  if(!confirm('정말 삭제하시겠습니까? (기존 내역은 유지됩니다)')) return;
+  agencies = agencies.filter(a => a.id !== id);
+  saveAgencies(agencies);
+  renderAgencies();
+  showToast('대리점이 삭제되었습니다.', 'info');
+}
+
 // ── EXPORT ──
 function exportCSV() {
   const headers=['접수번호','신청인','연락처','상품명','카테고리','보증금액','접수일','상태','메모'];
-  const rows=apps.map(a=>{
+  const rows=myApps.map(a=>{
     const p=SGI_PRODUCTS.find(x=>x.id===a.productId);
     return [a.id,a.name,a.contact,a.product,p?.cat||'-',a.amount,a.date,a.status,a.memo||''];
   });
@@ -1045,10 +1083,10 @@ function exportCSV() {
 function exportJSON() {
   const data={
     exportDate:today(), system:'SGI 서울보증보험 대리점 관리시스템',
-    summary:{totalApps:apps.length,totalContracts:contracts.length,
-      pending:apps.filter(a=>a.status==='접수대기').length,
-      activeContracts:contracts.filter(c=>c.status==='활성').length},
-    applications:apps, contracts:contracts,
+    summary:{totalApps:myApps.length,totalContracts:myContracts.length,
+      pending:myApps.filter(a=>a.status==='접수대기').length,
+      activeContracts:myContracts.filter(c=>c.status==='활성').length},
+    applications:myApps, contracts:myContracts,
     products:SGI_PRODUCTS.map(p=>({id:p.id,name:p.name,cat:p.cat,docs:p.docs,optDocs:p.optDocs,addons:p.addons})),
   };
   downloadFile(JSON.stringify(data,null,2),'sgi_data_'+todayFmt()+'.json','application/json');
@@ -1088,30 +1126,49 @@ function renderPaging(elId, pages, current, cb) {
 //  LOGIN
 // ════════════════════════════════════════════
 function doLogin() {
-  const aname = document.getElementById('agName').value.trim();
+  const aid = document.getElementById('agId').value.trim();
   const apw = document.getElementById('agPw').value.trim();
-  if(!aname) { showToast('대리점명을 입력해주세요.','warn'); return; }
+  if(!aid) { showToast('아이디를 입력해주세요.','warn'); return; }
   if(!apw) { showToast('비밀번호를 입력해주세요.','warn'); return; }
   
-  if(apw === 'sgi1234') {
+  const user = agencies.find(a => a.id === aid && a.pw === apw);
+  if(user) {
     sessionStorage.setItem('sgi_admin_logged', 'true');
-    sessionStorage.setItem('sgi_admin_name', aname);
+    sessionStorage.setItem('sgi_admin_role', user.role);
+    sessionStorage.setItem('sgi_admin_id', user.id);
+    sessionStorage.setItem('sgi_admin_name', user.name);
     document.getElementById('loginOverlay').style.display = 'none';
-    showToast(aname + ' 관리자님 환영합니다.','success');
+    showToast(user.name + ' 관리자님 환영합니다.','success');
+    initMenu();
+    filterMyData();
+    updateSideBadges();
+    renderDashboard();
   } else {
-    showToast('비밀번호가 일치하지 않습니다.','error');
+    showToast('아이디 또는 비밀번호가 일치하지 않습니다.','error');
+  }
+}
+
+function initMenu() {
+  const role = sessionStorage.getItem('sgi_admin_role');
+  const name = sessionStorage.getItem('sgi_admin_name') || 'Admin';
+  document.querySelector('.sb-sub').textContent = name + ' Dashboard';
+  if(role === 'super') {
+    document.querySelectorAll('.super-only').forEach(e => e.style.display = '');
   }
 }
 
 // ── INIT ──
 if(sessionStorage.getItem('sgi_admin_logged')==='true') {
   document.getElementById('loginOverlay').style.display='none';
+  initMenu();
+  filterMyData();
+  updateSideBadges();
+  renderDashboard();
 }
-updateSideBadges();
-renderDashboard();
 </script>
 </body>
 </html>
+
 
 
 
