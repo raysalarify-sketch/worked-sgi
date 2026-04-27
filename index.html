@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -33,7 +33,7 @@
   .bg-circle-2 { position: absolute; bottom: -10%; right: -5%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(29,158,117,0.05) 0%, rgba(29,158,117,0) 70%); border-radius: 50%; z-index: -1; }
 
   .container {
-    max-width: 1000px;
+    max-width: 1200px;
     width: 90%;
     margin: 0 auto;
     text-align: center;
@@ -73,7 +73,7 @@
     border: 1px solid rgba(255,255,255,0.8);
     border-radius: 24px;
     padding: 40px 36px;
-    width: 400px;
+    width: 350px;
     max-width: 100%;
     text-align: left;
     box-shadow: 0 10px 40px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,1);
@@ -154,7 +154,15 @@
         <div class="card-btn">접수 시작하기 <span>→</span></div>
       </a>
 
-      <!-- Admin Dashboard Card -->
+      <!-- Status Inquiry Card -->
+        <a href="apply.html?tab=status" class="card">
+          <div class="card-icon">🔍</div>
+          <h2 class="card-title">접수·상담 내역 조회</h2>
+          <p class="card-desc">기존에 신청하신 보증보험 진행 상태나 상담 내역을 연락처를 통해 언제든지 간편하게 조회할 수 있습니다.</p>
+          <div class="card-btn">내역 조회하기 <span>➔</span></div>
+        </a>
+
+        <!-- Admin Dashboard Card -->
       <a href="admin.html" class="card">
         <div class="card-icon">🔒</div>
         <h2 class="card-title">대리점 관리자</h2>
@@ -169,3 +177,4 @@
   </div>
 </body>
 </html>
+

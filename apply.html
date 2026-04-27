@@ -205,6 +205,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text3);line-height:1}
 .close-btn:hover{color:var(--text)}
 .modal-body{padding:24px;overflow-y:auto;flex:1;background:#fff}
+/* DESKTOP SIDEBAR LAYOUT */
+@media (min-width: 768px) {
+  body { display: flex; flex-direction: row; min-height: 100vh; align-items: stretch; margin: 0; overflow-x: hidden; }
+  .hero { width: 280px; height: 100vh; position: sticky; top: 0; left: 0; padding-top: 20px; flex-shrink: 0; z-index: 100; border-right: 1px solid rgba(0,0,0,0.1); }
+  .hero-inner { flex-direction: column; align-items: flex-start; padding: 20px; gap: 30px; }
+  .hero-nav { width: 100%; text-align: left; }
+  .hero-nav a { display: block; width: 100%; text-align: center; }
+  .hero-tabs { background: transparent; border-top: none; }
+  .hero-tabs-inner { flex-direction: column; padding: 0 20px; gap: 8px; }
+  .htab { text-align: left; border-bottom: none; border-left: 3px solid transparent; padding: 12px 16px; border-radius: 0 8px 8px 0; background: rgba(255,255,255,0.05); }
+  .htab.active { border-left-color: #61AEFF; background: rgba(255,255,255,0.15); border-bottom: none; }
+  .main { flex: 1; max-width: 1000px; margin: 0 auto; padding: 40px; }
+}
 </style>
 </head>
 <body>
@@ -870,6 +883,11 @@ function searchStatus() {
 // ── INIT ──
 renderCats();
 renderProducts();
+if (new URLSearchParams(window.location.search).get('tab') === 'status') {
+  gotoSection('s-status');
+  document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.htab')[3].classList.add('active');
+}
 </script>
 <!-- CONSULT MODAL -->
 <div class="modal-overlay" id="consultModal">
@@ -948,6 +966,7 @@ document.querySelectorAll('.modal-overlay').forEach(mo=>{
 </script>
 </body>
 </html>
+
 
 
 
