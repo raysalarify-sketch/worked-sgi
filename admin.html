@@ -670,11 +670,24 @@ function renderApps() {
         <span class="dp-text">${dd}/${dc}</span>
       </td>
       <td><span class="badge ${STATUS_MAP_CLS[a.status]||'b-wait'}">${a.status}</span></td>
-      <td><button class="btn btn-secondary btn-xs" onclick="event.stopPropagation();openAppModal('${a.id}')">상세</button></td>
+      <td>
+        <button class="btn btn-secondary btn-xs" onclick="event.stopPropagation();openAppModal('${a.id}')">상세</button>
+        <button class="btn btn-xs" style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5;margin-left:4px" onclick="event.stopPropagation();adminDeleteApp('${a.id}')">삭제</button>
+      </td>
     </tr>`;
   }).join('') : '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text3)">검색 결과가 없습니다</td></tr>';
 
   renderPaging('appPaging', pages, appPage, p=>{appPage=p;renderApps();});
+}
+
+function adminDeleteApp(id) {
+  if (!confirm('이 접수 내역을 삭제하시겠습니까?')) return;
+  apps = apps.filter(a => a.id !== id);
+  const allApps = JSON.parse(localStorage.getItem('sgi_applications') || '[]').filter(a => a.id !== id);
+  localStorage.setItem('sgi_applications', JSON.stringify(allApps));
+  filterMyData();
+  renderApps();
+  showToast('접수 내역이 삭제되었습니다.', 'info');
 }
 
 function appChip(el) {
